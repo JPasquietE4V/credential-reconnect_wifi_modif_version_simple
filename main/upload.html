@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <meta content="charset=UTF-8">
+    <head>
+        <script type="text/javascript">
+            window.onload = function () {
+                var server = document.getElementById("wsURL");
+                conn = new WebSocket(server.value);
+                var conn;
+                var log = document.getElementById("log");
+                var msg = document.getElementById("msg");
+                var pwd = document.getElementById("pwd");
+    
+                function appendLog(item) {
+                    var doScroll = log.scrollTop === log.scrollHeight - log.clientHeight;
+                    log.appendChild(item);
+                    if (doScroll) {
+                        log.scrollTop = log.scrollHeight - log.clientHeight;
+                    }
+                }
+    
+                document.getElementById("connect").onclick = function () {
+                    var server = document.getElementById("wsURL");
+                    conn = new WebSocket(server.value);
+                    if (window["WebSocket"]) {
+                        if (conn) {
+                            conn.onopen = function (evt) {
+                                document.getElementById("disconnect").disabled = false
+                                document.getElementById("sendMsg").disabled = false
+                                document.getElementById("connect").disabled = true
+                                document.getElementById("status").innerHTML = "Connexion ouverte"
+                            }
+                            conn.onclose = function (evt) {
+                                document.getElementById("status").innerHTML = "Connexion fermee"
+                                document.getElementById("connect").disabled = false
+                            };
+                            conn.onmessage = function (evt) {
+                                var messages = evt.data.split('\n');
+                                for (var i = 0; i < messages.length; i++) {
+                                    var item = document.createElement("pre");
+                                    item.innerText = messages[i];
+                                  //  appendLog(item);
+                                }
+                            }
+                        }
+                    } else {
+                        var item = document.createElement("pre");
+                        item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+                     //   appendLog(item);
+                    }
+                };
+    
+                document.getElementById("disconnect").onclick = function () {
+                    conn.close()
+                    document.getElementById("sendMsg").disabled = true
+                    document.getElementById("connect").disabled = false
+                    document.getElementById("disconnect").disabled = true
+                    document.getElementById("status").innerHTML = "Connexion fermee"
+                };
+    
+                document.getElementById("form").onsubmit = function () {
+                    if (!conn) {
+                        return false;
+                    }
+                    if (!msg.value) {
+                        return false;
+                    }
+                    if (!pwd.value) {
+                        return false;
+                    }
+                    //conn.send(str1);
+                    //const str1 = msg.value.toString();
+                    //const str2 = str2.concat('hello ',str1);
+                    //var x = new String(msg.value);
+                    //const str1 = msg.value;
+                    //conn.send(x.concat('','ssid'));
+                   // conn.send(str2);
+                   window.location.reload;
+                    conn.send('SSID'.concat(' : ',msg.value));
+                    conn.send('PASS'.concat(' : ',pwd.value));
+                    var item = document.createElement("pre");
+                    item.classList.add("subscribeMsg");
+                    item.innerHTML = msg.value;
+                    item.innerHTML = pwd.value;
+                    
+                   // appendLog(item);
+                    return true;
+                };
+            };
+    
+        </script>
+
+
+
+
+
+        <style>
+        body
+        {
+        padding: 30px;
+        background-color: #e5e5f7;
+        opacity: 0.8;
+        background-image:  repeating-radial-gradient( circle at 0 0, transparent 0, #e5e5f7 10px ), repeating-linear-gradient( #b6b6bb55, #b6b6bb );
+        }
+
+        fieldset
+        {
+            border-radius: 10px;
+            text-align: center;
+            margin-right: 100px;
+            margin-left: 100px;
+        }  
+
+
+        .outer-div
+        {
+            padding: 50px;
+            margin-left: 15%;
+            margin-top: 5%;
+            width: 600px;
+            height: 350px;
+            background-color: #f3f3f3;
+            border-radius: 25px;
+        
+        }
+    
+
+        .log
+        {
+            background: white;
+            overflow: auto;
+            position: absolute;
+            height: 130px;
+            width: 150px;
+        }
+        
+        .form 
+        {
+            padding: 0 0.5em 0 0.5em;
+            margin: 0;
+            position: absolute;
+            bottom: 3em;
+            top: 5em;
+            left: 8px;
+            width: 100%;
+            overflow: hidden;
+            
+        }
+        
+        .serverLocation 
+        {
+            padding-top: 0.3em;
+        }
+        
+        .requestSection 
+        {
+            height: 38px;
+        }
+        
+        .responseMsgSection 
+        {
+            width: 200px;
+            height: 150px;
+            position: relative;
+        }
+        
+        
+        .fieldset 
+        {
+            /*
+            max-width: 500px;
+            max-height: 500px;*/
+            width: auto;
+            height: auto;
+        }
+        
+        
+        /*@media screen and (max-width: 600px) and (max-height:1000px)*/
+        @media (max-width: 600px)
+        {
+            .outer-div 
+            {
+                margin: 0;
+                padding: 0px;
+                width: auto;
+                height: auto;   
+            }
+
+            .fieldset 
+            {
+                max-width: 500px;
+                max-height: 500px;
+       
+            }
+
+            #Serveur
+            {
+                width: 200px;
+                position: relative;
+                right: 60px;
+            }
+
+            #requestSection
+            {
+                position: relative;
+                top: 5px; right: 60px;
+
+            }
+
+        }
+
+    
+        
+
+
+        
+    </style>
+
+        </head>
+
+
+<body>  
+    <!-- <img src="e4v_logo.png" width="100" height="100" style="position: absolute; top: 250px; left: 275px;" /> -->
+    <!-- <img src="wifi.png" width="100" height="60" style="position: absolute; top: 280px; left: 875px;" /> -->
+    <div class="outer-div">
+        
+        <h1 style="text-align: center;">Connexion au Wifi</h1>
+ 
+
+
+ <fieldset style="padding:20px; " id="Serveur">
+    <legend >Reseaux Connus</legend>
+    <div style="display:none;">
+        <input type="button" id="connect" value="Connecter" class="button"/>
+        <input type="button" id="disconnect" value="Deconnecter" disabled/>
+        <input type="text" id="wsURL" value="ws://192.168.4.1/ws" size="59">
+        <span id="status"></span>
+    </div>
+
+
+    <form action="/action_page.php">
+        <label for="selection_reseau">Choisissez votre reseau:</label>
+        <select name="selection_reseau" id="selection_reseau">
+            <option value="Reseau1">Reseau 1</option>
+            <option value="Reseau2">Reseau 2</option>
+            <option value="Reseau3">Reseau 3</option>
+            <option value="Reseau4">Reseau 4</option>
+        </select>
+        <br><br>
+        <input type="submit" value="Selectionner" >
+        <button type="button" style="margin-left:15px; " > Modifier </button>
+
+      </form>
+
+
+</fieldset><br></br>
+<fieldset id="requestSection">
+    <legend>Envoi de Requete</legend>
+    <form id="form">
+        
+        <a>SSID : </a> <input type="text" id="msg" size="30" />
+        <br></br>
+        <a>Mot de passe : </a> <input type="text" id="pwd" size="30"/>
+        <br></br>
+
+        <input type="submit" type="submit" value="Envoyer" ; enabled/>
+    </form>
+</fieldset><br></br>
+
+
+</div>  
+</body>
+</html>
