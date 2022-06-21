@@ -22,7 +22,7 @@ static QueueHandle_t msg_queue;
 void xtask_wifi_scanning(void *args)
 {
 	while (1)
-	{
+	{	// SIMPLE
 		//printf("entrée dans la task \n");
 		if (get_svrdata()->wifi_initialized == true)
 		{
