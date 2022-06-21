@@ -176,7 +176,7 @@ bool wifi_apsta(int timeout_ms)
 		/**********************************************/
 
 		/************* MISE A JOUR DE LA CONFIG	*************/
-		printf("\n\n\n MISE A JOUR DE LA CONFIG");
+		printf("\n\n\n MISE A JOUR DE LA CONFIG\n");
 		strcpy((char *)(get_svrdata()->sta_config.sta.ssid), my_struct.SSID);
 		strcpy((char *)(get_svrdata()->sta_config.sta.password), my_struct.PASS);
 	}
@@ -222,51 +222,96 @@ bool wifi_apsta(int timeout_ms)
 
 void scann_wifi_around()
 {
-	printf("1 \n");
 	ESP_ERROR_CHECK(nvs_flash_init());
-	printf("2 \n");
 
 	tcpip_adapter_init();
-	printf("3 \n");
 
 	wifi_init_config_t wifi_config = WIFI_INIT_CONFIG_DEFAULT();
-	printf("4 \n");
 	ESP_ERROR_CHECK(esp_wifi_init(&wifi_config));
-	printf("5 \n");
 	ESP_ERROR_CHECK(esp_wifi_start()); // starts wifi usage
-	printf("6 \n");
 	// configure and run the scan process in blocking mode
 	wifi_scan_config_t scan_config = {
 		.ssid = 0,
 		.bssid = 0,
 		.channel = 0,
 		.show_hidden = true};
-	printf("Start scanning... \n");
-	ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
-	// printf(" completed!\n");
-	// get the list of APs found in the last scan
-	uint16_t ap_num;
-	wifi_ap_record_t ap_records[20];
-	ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_num));
-	ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, ap_records));
-	// print the list
-	printf("Found %d access points:\n", ap_num);
 
-	// printf("               SSID              | Channel | RSSI |   MAC \n\n");
-	// printf("----------------------------------------------------------------\n");
-	for (int i = 0; i < ap_num; i++)
+	//################## NVS #####################
+
+	esp_err_t err2 = nvs_flash_init();
+	if (err2 == ESP_ERR_NVS_NO_FREE_PAGES || err2 == ESP_ERR_NVS_NEW_VERSION_FOUND)
 	{
-		printf("%32s | %7d | %4d   %2x:%2x:%2x:%2x:%2x:%2x   \n", ap_records[i].ssid, ap_records[i].primary, ap_records[i].rssi, *ap_records[i].bssid, *(ap_records[i].bssid + 1), *(ap_records[i].bssid + 2), *(ap_records[i].bssid + 3), *(ap_records[i].bssid + 4), *(ap_records[i].bssid + 5));
-
-		char dst[75];
-		memcpy(dst, ap_records[i].ssid, 33);
-		char test[33] = "Jeremy";
-		// printf(" \n %s %s \n "test2,test);
-		if (strcmp(dst, test) == NULL)
-		{
-			printf("\n\n\nyoupi\n\n\n");
-		}
-		//  printf("----------------------------------------------------------------\n");
+		// NVS partition was truncated and needs to be erased
+		// Retry nvs_flash_init
+		ESP_ERROR_CHECK(nvs_flash_erase());
+		err2 = nvs_flash_init();
 	}
-	printf("\n\n ICI SSID ts_credentials\n ######### %s #######", get_svrdata()->credentials.SSID);
+	ESP_ERROR_CHECK(err2);
+
+	// Open
+	printf("\n");
+	printf("Opening Non-Volatile Storage (NVS) handle... ");
+	nvs_handle_t my_handle;
+	err2 = nvs_open("storage", NVS_READWRITE, &my_handle);
+	if (err2 != ESP_OK)
+	{
+		printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err2));
+	}
+	else
+	{
+		printf("nvs_open Done\n");
+
+		// Read
+		printf("Reading restart counter from NVS ... \n\n");
+
+		// char msg_get[STRLN]="                ";
+		ts_credentials my_struct;
+		strcpy(my_struct.SSID, "  ");
+		strcpy(my_struct.PASS, "  ");
+
+		size_t s = sizeof(ts_credentials) / sizeof(uint8_t);
+		err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
+							&s);
+
+		my_struct.SSID[STREND] = 0; // au cas ou
+		my_struct.PASS[STREND] = 0; // au cas ou
+
+		printf("==> SSID = %s !!!!!!!!!!!!!!!!!!!!\n", my_struct.SSID);
+		printf("==> PASS = %s !!!!!!!!!!!!!!!!!!!!\n\n", my_struct.PASS);
+
+		printf("Start scanning... \n");
+
+		ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
+
+		uint16_t ap_num;
+		wifi_ap_record_t ap_records[20];
+		ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_num));
+		ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, ap_records));
+
+		printf("Found %d access points:\n", ap_num);
+
+		printf("               SSID              | Channel | RSSI |   MAC \n\n");
+		printf("--------------------------------------------------------------------------\n");
+		for (int i = 0; i < ap_num; i++)
+		{
+			printf("%32s | %7d | %4d   %2x:%2x:%2x:%2x:%2x:%2x   \n", ap_records[i].ssid, ap_records[i].primary, ap_records[i].rssi, *ap_records[i].bssid, *(ap_records[i].bssid + 1), *(ap_records[i].bssid + 2), *(ap_records[i].bssid + 3), *(ap_records[i].bssid + 4), *(ap_records[i].bssid + 5));
+
+			char ref[33];
+			memcpy(ref, ap_records[i].ssid, 33);
+			char test[33];
+			memcpy(test, my_struct.SSID, 33);
+			// printf(" \n %s %s \n "test2,test);
+			if (strcmp(ref, test) == NULL)
+			{
+				//printf("\n\n\nyoupi\n\n\n");
+				get_svrdata()->wifi_sta_available = true;
+			}
+			else{
+				get_svrdata()->wifi_sta_available = false;
+			}
+		}
+		printf("--------------------------------------------------------------------------\n");
+		printf("\n\n ICI SSID ts_credentials\n ######### %s ####### \n", my_struct.SSID);
+	}
+	//############################################
 }

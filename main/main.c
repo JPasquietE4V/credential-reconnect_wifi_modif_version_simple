@@ -24,16 +24,14 @@ void xtask_wifi_scanning(void *args)
 	while (1)
 	{
 		// COMPLEXE
-		//printf("entrée dans la task \n");
 		if (get_svrdata()->wifi_initialized == true)
 		{
 			printf("\n\n\n ############## wifi is initalised, so I can scann ######################### \n\n");
-		//	scann_wifi_around();
+			scann_wifi_around();
 		}
-	//	printf("sortie de la task \n");
-			vTaskDelay(35000 / portTICK_PERIOD_MS);
-		//	esp_wifi_disconnect();
-		//	esp_wifi_stop();
+			vTaskDelay(15000 / portTICK_PERIOD_MS);
+			esp_wifi_disconnect();
+			esp_wifi_stop();
 			vTaskDelay(100 / portTICK_PERIOD_MS);
 	}
 }
