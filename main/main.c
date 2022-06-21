@@ -19,23 +19,6 @@ extern const char *TAGWS;
 #define GPIN GPIO_NUM_12
 
 static QueueHandle_t msg_queue;
-void xtask_wifi_scanning(void *args)
-{
-	while (1)
-	{	// SIMPLE
-		//printf("entrée dans la task \n");
-		if (get_svrdata()->wifi_initialized == true)
-		{
-			printf("\n\n\n ############## wifi is initalised, so I can scann ######################### \n\n");
-		//	scann_wifi_around();
-		}
-	//	printf("sortie de la task \n");
-		//	vTaskDelay(35000 / portTICK_PERIOD_MS);
-		//	esp_wifi_disconnect();
-		//	esp_wifi_stop();
-			vTaskDelay(100 / portTICK_PERIOD_MS);
-	}
-}
 
 void xtask_blink(void *args)
 {
@@ -147,7 +130,6 @@ void app_main(void)
 		printf("GPIO pins OK\n");
 		gpio_set_level(GPIN, 0);
 		xTaskCreate(xtask_blink, "gpio_task_blink", 2048, (void *)&frequence, 2, NULL);
-		xTaskCreate(xtask_wifi_scanning, "wifi_task_scanning", 4096, NULL, 0, NULL);
 	}
 
 	esp_err_t err = nvs_flash_init();
