@@ -30,7 +30,7 @@ void xtask_wifi_scanning(void *args)
 		//	scann_wifi_around();
 		}
 	//	printf("sortie de la task \n");
-			vTaskDelay(35000 / portTICK_PERIOD_MS);
+		//	vTaskDelay(35000 / portTICK_PERIOD_MS);
 		//	esp_wifi_disconnect();
 		//	esp_wifi_stop();
 			vTaskDelay(100 / portTICK_PERIOD_MS);
