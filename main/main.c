@@ -23,6 +23,7 @@ void xtask_wifi_scanning(void *args)
 {
 	while (1)
 	{
+		// COMPLEXE
 		//printf("entrée dans la task \n");
 		if (get_svrdata()->wifi_initialized == true)
 		{
