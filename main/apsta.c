@@ -2,6 +2,11 @@
 #include "websocket.h"
 #include "apsta_shared.h"
 
+
+#define CREDENTIALS_LEN 65
+#define STRLN 65
+#define STREND (CREDENTIALS_LEN - 1)
+
 const char *TAG_APSTA = "AP_STATION";
 
 void event_handler(void *arg, esp_event_base_t event_base,
@@ -40,6 +45,97 @@ void event_handler(void *arg, esp_event_base_t event_base,
 			ESP_ERR_WIFI_CONN: WiFi internal error, station or soft-AP control block wrong
 			ESP_ERR_WIFI_SSID: SSID of AP which station connects is invalid
 		*/
+
+
+		//##################### NVS ########################
+		
+		// Initialize NVS
+		esp_err_t err = nvs_flash_init();
+		if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
+		{
+			// NVS partition was truncated and needs to be erased
+			// Retry nvs_flash_init
+			ESP_ERROR_CHECK(nvs_flash_erase());
+			err = nvs_flash_init();
+		}
+		ESP_ERROR_CHECK(err);
+
+		// Open
+		printf("\n");
+		printf("Opening Non-Volatile Storage (NVS) handle... ");
+		nvs_handle_t my_handle;
+		err = nvs_open("storage", NVS_READWRITE, &my_handle);
+		if (err != ESP_OK)
+		{
+			printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+		}
+		else
+		{
+			printf("nvs_open Done\n");
+
+			// Read
+			printf("Reading restart counter from NVS ... \n\n");
+
+			// char msg_get[STRLN]="                ";
+			ts_credentials my_struct;
+			strcpy(my_struct.SSID, "  ");
+			strcpy(my_struct.PASS, "  ");
+
+			char new_SSID[STRLN] = "Jeremy";
+			char new_PASS[STRLN] = "pasquiej";
+
+			size_t s = sizeof(ts_credentials) / sizeof(uint8_t);
+			err = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
+							   &s);
+
+			my_struct.SSID[STREND] = 0; // au cas ou
+			my_struct.PASS[STREND] = 0; // au cas ou
+
+			printf("-->get SSID = %s\n", my_struct.SSID);
+			printf("-->get PASS = %s %d\n\n", my_struct.PASS, strlen(my_struct.PASS));
+
+			strcpy(my_struct.SSID, new_SSID);
+			strcpy(my_struct.PASS, new_PASS);
+			s = sizeof(ts_credentials) / sizeof(uint8_t);
+			err = nvs_set_blob(my_handle, "ssid", (uint8_t *)&my_struct,
+							   s);
+
+			printf("set new_SSID = %s\n", my_struct.SSID);
+			printf("set new_PASS = %s %d\n", my_struct.PASS, strlen(new_PASS));
+
+			switch (err)
+			{
+			case ESP_OK:
+				printf("ESP_OK nvs_set_str \n");
+				break;
+			case ESP_ERR_NVS_NOT_FOUND:
+				printf("The value is not initialized yet!\n");
+				break;
+			default:
+				printf("Error (%s) reading!\n", esp_err_to_name(err));
+			}
+
+			// Write
+			// printf("Updating restart msg in NVS ... ");
+			// restart_counter++;
+
+			// err = nvs_set_i32(my_handle, "restart_counter", restart_counter);
+			// printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
+
+			// Commit written value.
+			// After setting any values, nvs_commit() must be called to ensure changes are written
+			// to flash storage. Implementations may write to storage at other times,
+			// but this is not guaranteed.
+			// printf("Committing updates in NVS ... ");
+			//vTaskDelay(100 / portTICK_PERIOD_MS);
+			err = nvs_commit(my_handle);
+			printf((err != ESP_OK) ? "Failed!\n" : "nvs_commit  Done\n");
+			// Close
+			//vTaskDelay(100 / portTICK_PERIOD_MS);
+			nvs_close(my_handle);
+		}
+
+		//##################################################
 		esp_wifi_connect();
 		xEventGroupClearBits(get_svrdata()->wifi_event_group, get_svrdata()->CONNECTED_BIT);
 	}
