@@ -6,9 +6,9 @@
 #include <freertos/task.h>
 #include <freertos/queue.h>
 #include <freertos/timers.h>
-
+#include <string.h>
 #include "apsta_shared.h"
-
+#include "simplecrc.h"
 #include <driver/gpio.h>
 
 #include <esp_task_wdt.h>
@@ -23,17 +23,17 @@ void xtask_wifi_scanning(void *args)
 {
 	while (1)
 	{
-		//printf("entrée dans la task \n");
+		// printf("entrée dans la task \n");
 		if (get_svrdata()->wifi_initialized == true)
 		{
 			printf("\n\n\n ############## wifi is initalised, so I can scann ######################### \n\n");
-		//	scann_wifi_around();
+			//	scann_wifi_around();
 		}
-	//	printf("sortie de la task \n");
-			vTaskDelay(35000 / portTICK_PERIOD_MS);
+		//	printf("sortie de la task \n");
+		vTaskDelay(30000 / portTICK_PERIOD_MS);
 		//	esp_wifi_disconnect();
 		//	esp_wifi_stop();
-			vTaskDelay(100 / portTICK_PERIOD_MS);
+		vTaskDelay(100 / portTICK_PERIOD_MS);
 	}
 }
 
@@ -209,6 +209,23 @@ void app_main(void)
 
 		printf("-->get SSID = %s\n", my_struct.SSID);
 		printf("-->get PASS = %s \n\n", my_struct.PASS);
+
+		uint32_t crc = 0;
+		char jrm[] = "Jeremy";
+		int len = strlen(jrm);
+		crc32(jrm, (len>0)?(len):0, &crc);
+		printf("################################\n");
+		printf("################################\n");
+		printf("Ref for %s = %x\n size is %d \n", jrm, crc, len);
+		printf("################################\n");
+		uint32_t crc2 = 0;
+		// char calculated[strlen(my_struct.SSID)];
+		int len2 = strlen(my_struct.SSID);
+		crc32(my_struct.SSID, (len2>0)?(len2):0, &crc2);
+		// memcpy(my_struct.SSID, my_struct.SSID,len2);
+		printf("Result got with %s = %x\n size is %d\n", my_struct.SSID, crc2, len2);
+		printf("################################\n");
+		printf("################################\n");
 
 		switch (err2)
 		{
