@@ -15,7 +15,7 @@ void event_handler(void *arg, esp_event_base_t event_base,
 	printf("get_svrdata()->wifi_sta_available ==> %d \n\n", get_svrdata()->wifi_sta_available);
 	// if (get_svrdata()->wifi_sta_available == true)
 	// {
-	printf("\n coucou \n");
+	// printf("\n coucou \n");
 
 	if (event_id == WIFI_EVENT_STA_DISCONNECTED)
 	{
@@ -309,43 +309,56 @@ bool wifi_apsta(int timeout_ms)
 
 void scann_wifi_around()
 {
-	ESP_ERROR_CHECK(nvs_flash_init());
+	printf("debut scan_wifi_around");
+	// ESP_ERROR_CHECK(nvs_flash_init());
 
-	tcpip_adapter_init();
+	//tcpip_adapter_init();
 
-	wifi_init_config_t wifi_config = WIFI_INIT_CONFIG_DEFAULT();
-	ESP_ERROR_CHECK(esp_wifi_init(&wifi_config));
-	ESP_ERROR_CHECK(esp_wifi_start()); // starts wifi usage
+	//wifi_init_config_t wifi_config = WIFI_INIT_CONFIG_DEFAULT();
+	//ESP_ERROR_CHECK(esp_wifi_init(&wifi_config));
+	//ESP_ERROR_CHECK(esp_wifi_start()); // starts wifi usage
+	
 	// configure and run the scan process in blocking mode
 	wifi_scan_config_t scan_config = {
 		.ssid = 0,
 		.bssid = 0,
 		.channel = 0,
-		.show_hidden = true};
+		.show_hidden = true,
+		.scan_type = WIFI_SCAN_TYPE_PASSIVE,
+		.scan_time.passive = 1000
+		};
+
+	wifi_country_t scan_country = {
+		.cc = "FR",
+		.schan = 1,
+		.nchan = 11,
+		.policy = WIFI_COUNTRY_POLICY_AUTO
+	};
 
 	//################## NVS #####################
-
-	esp_err_t err2 = nvs_flash_init();
+	esp_err_t err2;
+	/*esp_err_t err2 = nvs_flash_init();
 	if (err2 == ESP_ERR_NVS_NO_FREE_PAGES || err2 == ESP_ERR_NVS_NEW_VERSION_FOUND)
 	{
 		// NVS partition was truncated and needs to be erased
 		// Retry nvs_flash_init
 		ESP_ERROR_CHECK(nvs_flash_erase());
 		err2 = nvs_flash_init();
-	}
-	ESP_ERROR_CHECK(err2);
+	}*/
+//	ESP_ERROR_CHECK(err2);
 
 	// Open
 	printf("\n");
 	// printf("Opening Non-Volatile Storage (NVS) handle... ");
 	nvs_handle_t my_handle;
-	err2 = nvs_open("storage", NVS_READWRITE, &my_handle);
-	if (err2 != ESP_OK)
+
+	/*err2 = */nvs_open("storage", NVS_READWRITE, &my_handle);
+	/*if (err2 != ESP_OK)
 	{
 		printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err2));
 	}
 	else
-	{
+	{*/
 		// printf("nvs_open Done\n");
 
 		// Read
@@ -357,7 +370,7 @@ void scann_wifi_around()
 		strcpy(my_struct.PASS, "  ");
 
 		size_t s = sizeof(ts_credentials) / sizeof(uint8_t);
-		err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
+		/*err2 = */nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
 							&s);
 
 		my_struct.SSID[STREND] = 0; // au cas ou
@@ -368,20 +381,28 @@ void scann_wifi_around()
 
 		// printf("Start scanning... \n");
 		get_svrdata()->wifi_sta_available = false;
-		ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
-
+		
+		//esp_wifi_disconnect();
+		esp_wifi_set_country(&scan_country);
+		// ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, false));
+		ESP_ERROR_CHECK(esp_wifi_disconnect());
+		esp_err_t error_scan = esp_wifi_scan_start(&scan_config, false);
+		if (error_scan!=ESP_OK)
+			ESP_LOGI("ON S'ENFOUT", "MESSAGE: WIFI SCAN FAILED WITH CODE %d",error_scan);
+		
 		uint16_t ap_num;
 		wifi_ap_record_t ap_records[20];
+
 		ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_num));
 		ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, ap_records));
 
 		printf("Found %d access points:\n", ap_num);
 
-		// printf("               SSID              | Channel | RSSI |   MAC \n\n");
-		// printf("-----------------------------------------------------------------------\n");
+		printf("               SSID              | Channel | RSSI |   MAC \n\n");
+		printf("-----------------------------------------------------------------------\n");
 		for (int i = 0; i < ap_num; i++)
 		{
-			// printf("%32s | %7d | %4d   %2x:%2x:%2x:%2x:%2x:%2x   \n", ap_records[i].ssid, ap_records[i].primary, ap_records[i].rssi, *ap_records[i].bssid, *(ap_records[i].bssid + 1), *(ap_records[i].bssid + 2), *(ap_records[i].bssid + 3), *(ap_records[i].bssid + 4), *(ap_records[i].bssid + 5));
+			printf("%32s | %7d | %4d   %2x:%2x:%2x:%2x:%2x:%2x   \n", ap_records[i].ssid, ap_records[i].primary, ap_records[i].rssi, *ap_records[i].bssid, *(ap_records[i].bssid + 1), *(ap_records[i].bssid + 2), *(ap_records[i].bssid + 3), *(ap_records[i].bssid + 4), *(ap_records[i].bssid + 5));
 
 			char ref[33];
 			memcpy(ref, ap_records[i].ssid, 33);
@@ -395,8 +416,10 @@ void scann_wifi_around()
 				get_svrdata()->wifi_sta_available = true;
 			}
 		}
-		// printf("-----------------------------------------------------------------------\n");
+		printf("-----------------------------------------------------------------------\n");
+		nvs_close(my_handle);
+		//esp_wifi_connect();
 		// printf("\n\n ICI SSID ts_credentials\n ######### %s ####### \n", my_struct.SSID);
-	}
+	//}
 	//############################################
 }
