@@ -40,6 +40,7 @@ void event_handler(void *arg, esp_event_base_t event_base,
 			ESP_ERR_WIFI_CONN: WiFi internal error, station or soft-AP control block wrong
 			ESP_ERR_WIFI_SSID: SSID of AP which station connects is invalid
 		*/
+		
 		esp_wifi_connect();
 		xEventGroupClearBits(get_svrdata()->wifi_event_group, get_svrdata()->CONNECTED_BIT);
 	}
@@ -220,53 +221,53 @@ bool wifi_apsta(int timeout_ms)
 	return (bits & get_svrdata()->CONNECTED_BIT) != 0;
 }
 
-void scann_wifi_around()
-{
-	printf("1 \n");
-	ESP_ERROR_CHECK(nvs_flash_init());
-	printf("2 \n");
+// void scann_wifi_around()
+// {
+// 	printf("1 \n");
+// 	ESP_ERROR_CHECK(nvs_flash_init());
+// 	printf("2 \n");
 
-	tcpip_adapter_init();
-	printf("3 \n");
+// 	tcpip_adapter_init();
+// 	printf("3 \n");
 
-	wifi_init_config_t wifi_config = WIFI_INIT_CONFIG_DEFAULT();
-	printf("4 \n");
-	ESP_ERROR_CHECK(esp_wifi_init(&wifi_config));
-	printf("5 \n");
-	ESP_ERROR_CHECK(esp_wifi_start()); // starts wifi usage
-	printf("6 \n");
-	// configure and run the scan process in blocking mode
-	wifi_scan_config_t scan_config = {
-		.ssid = 0,
-		.bssid = 0,
-		.channel = 0,
-		.show_hidden = true};
-	printf("Start scanning... \n");
-	ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
-	// printf(" completed!\n");
-	// get the list of APs found in the last scan
-	uint16_t ap_num;
-	wifi_ap_record_t ap_records[20];
-	ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_num));
-	ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, ap_records));
-	// print the list
-	printf("Found %d access points:\n", ap_num);
+// 	wifi_init_config_t wifi_config = WIFI_INIT_CONFIG_DEFAULT();
+// 	printf("4 \n");
+// 	ESP_ERROR_CHECK(esp_wifi_init(&wifi_config));
+// 	printf("5 \n");
+// 	ESP_ERROR_CHECK(esp_wifi_start()); // starts wifi usage
+// 	printf("6 \n");
+// 	// configure and run the scan process in blocking mode
+// 	wifi_scan_config_t scan_config = {
+// 		.ssid = 0,
+// 		.bssid = 0,
+// 		.channel = 0,
+// 		.show_hidden = true};
+// 	printf("Start scanning... \n");
+// 	ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
+// 	// printf(" completed!\n");
+// 	// get the list of APs found in the last scan
+// 	uint16_t ap_num;
+// 	wifi_ap_record_t ap_records[20];
+// 	ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_num));
+// 	ESP_ERROR_CHECK(esp_wifi_scan_get_ap_records(&ap_num, ap_records));
+// 	// print the list
+// 	printf("Found %d access points:\n", ap_num);
 
-	// printf("               SSID              | Channel | RSSI |   MAC \n\n");
-	// printf("----------------------------------------------------------------\n");
-	for (int i = 0; i < ap_num; i++)
-	{
-		printf("%32s | %7d | %4d   %2x:%2x:%2x:%2x:%2x:%2x   \n", ap_records[i].ssid, ap_records[i].primary, ap_records[i].rssi, *ap_records[i].bssid, *(ap_records[i].bssid + 1), *(ap_records[i].bssid + 2), *(ap_records[i].bssid + 3), *(ap_records[i].bssid + 4), *(ap_records[i].bssid + 5));
+// 	// printf("               SSID              | Channel | RSSI |   MAC \n\n");
+// 	// printf("----------------------------------------------------------------\n");
+// 	for (int i = 0; i < ap_num; i++)
+// 	{
+// 		printf("%32s | %7d | %4d   %2x:%2x:%2x:%2x:%2x:%2x   \n", ap_records[i].ssid, ap_records[i].primary, ap_records[i].rssi, *ap_records[i].bssid, *(ap_records[i].bssid + 1), *(ap_records[i].bssid + 2), *(ap_records[i].bssid + 3), *(ap_records[i].bssid + 4), *(ap_records[i].bssid + 5));
 
-		char dst[75];
-		memcpy(dst, ap_records[i].ssid, 33);
-		char test[33] = "Jeremy";
-		// printf(" \n %s %s \n "test2,test);
-		if (strcmp(dst, test) == NULL)
-		{
-			printf("\n\n\nyoupi\n\n\n");
-		}
-		//  printf("----------------------------------------------------------------\n");
-	}
-	printf("\n\n ICI SSID ts_credentials\n ######### %s #######", get_svrdata()->credentials.SSID);
-}
+// 		char dst[75];
+// 		memcpy(dst, ap_records[i].ssid, 33);
+// 		char test[33] = "Jeremy";
+// 		// printf(" \n %s %s \n "test2,test);
+// 		if (strcmp(dst, test) == NULL)
+// 		{
+// 			printf("\n\n\nyoupi\n\n\n");
+// 		}
+// 		//  printf("----------------------------------------------------------------\n");
+// 	}
+// 	printf("\n\n ICI SSID ts_credentials\n ######### %s #######", get_svrdata()->credentials.SSID);
+// }
