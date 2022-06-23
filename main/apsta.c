@@ -2,7 +2,6 @@
 #include "websocket.h"
 #include "apsta_shared.h"
 
-
 #define CREDENTIALS_LEN 65
 #define STRLN 65
 #define STREND (CREDENTIALS_LEN - 1)
@@ -12,6 +11,12 @@ const char *TAG_APSTA = "AP_STATION";
 void event_handler(void *arg, esp_event_base_t event_base,
 				   int32_t event_id, void *event_data)
 {
+	printf("############## event_handler ##############\n");
+	printf("get_svrdata()->wifi_sta_available ==> %d \n\n", get_svrdata()->wifi_sta_available);
+	// if (get_svrdata()->wifi_sta_available == true)
+	// {
+	printf("\n coucou \n");
+
 	if (event_id == WIFI_EVENT_STA_DISCONNECTED)
 	{
 		printf(" \n Station disconnected \n");
@@ -46,9 +51,8 @@ void event_handler(void *arg, esp_event_base_t event_base,
 			ESP_ERR_WIFI_SSID: SSID of AP which station connects is invalid
 		*/
 
-
 		//##################### NVS ########################
-		
+
 		// Initialize NVS
 		esp_err_t err = nvs_flash_init();
 		if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -114,28 +118,10 @@ void event_handler(void *arg, esp_event_base_t event_base,
 			default:
 				printf("Error (%s) reading!\n", esp_err_to_name(err));
 			}
-
-			// Write
-			// printf("Updating restart msg in NVS ... ");
-			// restart_counter++;
-
-			// err = nvs_set_i32(my_handle, "restart_counter", restart_counter);
-			// printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
-
-			// Commit written value.
-			// After setting any values, nvs_commit() must be called to ensure changes are written
-			// to flash storage. Implementations may write to storage at other times,
-			// but this is not guaranteed.
-			// printf("Committing updates in NVS ... ");
-			//vTaskDelay(100 / portTICK_PERIOD_MS);
 			err = nvs_commit(my_handle);
 			printf((err != ESP_OK) ? "Failed!\n" : "nvs_commit  Done\n");
-			// Close
-			//vTaskDelay(100 / portTICK_PERIOD_MS);
 			nvs_close(my_handle);
 		}
-
-		//##################################################
 		esp_wifi_connect();
 		xEventGroupClearBits(get_svrdata()->wifi_event_group, get_svrdata()->CONNECTED_BIT);
 	}
@@ -146,6 +132,7 @@ void event_handler(void *arg, esp_event_base_t event_base,
 		printf("\n #################### Station connected #################### \n");
 		get_svrdata()->wifi_sta_connected = true;
 	}
+	//}
 }
 
 void initialise_wifi(void)
@@ -182,7 +169,11 @@ void initialise_wifi(void)
 	get_svrdata()->sta_netif = esp_netif_create_default_wifi_sta();
 	ESP_ERROR_CHECK(esp_wifi_init(&(get_svrdata()->cfg)));
 
+	// if (get_svrdata()->wifi_sta_available == true)
+	// {
+	// 	printf("\n coucou \n");
 	ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &event_handler, NULL));
+	// }
 	ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL));
 
 	ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
@@ -221,7 +212,7 @@ bool wifi_apsta(int timeout_ms)
 
 	// Open
 	printf("\n");
-	printf("Opening Non-Volatile Storage (NVS) handle... ");
+	// printf("Opening Non-Volatile Storage (NVS) handle... ");
 	nvs_handle_t my_handle;
 	err2 = nvs_open("storage", NVS_READWRITE, &my_handle);
 	if (err2 != ESP_OK)
@@ -230,10 +221,10 @@ bool wifi_apsta(int timeout_ms)
 	}
 	else
 	{
-		printf("nvs_open Done\n");
+		// printf("nvs_open Done\n");
 
 		// Read
-		printf("Reading restart counter from NVS ... \n\n");
+		// printf("Reading restart counter from NVS ... \n\n");
 
 		// char msg_get[STRLN]="                ";
 		ts_credentials my_struct;
@@ -247,8 +238,8 @@ bool wifi_apsta(int timeout_ms)
 		my_struct.SSID[STREND] = 0; // au cas ou
 		my_struct.PASS[STREND] = 0; // au cas ou
 
-		printf("-->get SSID = %s\n", my_struct.SSID);
-		printf("-->get PASS = %s \n\n", my_struct.PASS);
+		// printf("-->get SSID = %s\n", my_struct.SSID);
+		// printf("-->get PASS = %s \n\n", my_struct.PASS);
 
 		switch (err2)
 		{
@@ -272,7 +263,7 @@ bool wifi_apsta(int timeout_ms)
 		/**********************************************/
 
 		/************* MISE A JOUR DE LA CONFIG	*************/
-		printf("\n\n\n MISE A JOUR DE LA CONFIG\n");
+		// printf("\n\n\n MISE A JOUR DE LA CONFIG\n");
 		strcpy((char *)(get_svrdata()->sta_config.sta.ssid), my_struct.SSID);
 		strcpy((char *)(get_svrdata()->sta_config.sta.password), my_struct.PASS);
 	}
@@ -346,7 +337,7 @@ void scann_wifi_around()
 
 	// Open
 	printf("\n");
-	printf("Opening Non-Volatile Storage (NVS) handle... ");
+	// printf("Opening Non-Volatile Storage (NVS) handle... ");
 	nvs_handle_t my_handle;
 	err2 = nvs_open("storage", NVS_READWRITE, &my_handle);
 	if (err2 != ESP_OK)
@@ -355,10 +346,10 @@ void scann_wifi_around()
 	}
 	else
 	{
-		printf("nvs_open Done\n");
+		// printf("nvs_open Done\n");
 
 		// Read
-		printf("Reading restart counter from NVS ... \n\n");
+		// printf("Reading restart counter from NVS ... \n\n");
 
 		// char msg_get[STRLN]="                ";
 		ts_credentials my_struct;
@@ -372,11 +363,11 @@ void scann_wifi_around()
 		my_struct.SSID[STREND] = 0; // au cas ou
 		my_struct.PASS[STREND] = 0; // au cas ou
 
-		printf("==> SSID = %s !!!!!!!!!!!!!!!!!!!!\n", my_struct.SSID);
-		printf("==> PASS = %s !!!!!!!!!!!!!!!!!!!!\n\n", my_struct.PASS);
+		// printf("==> SSID = %s !!!!!!!!!!!!!!!!!!!!\n", my_struct.SSID);
+		// printf("==> PASS = %s !!!!!!!!!!!!!!!!!!!!\n\n", my_struct.PASS);
 
-		printf("Start scanning... \n");
-
+		// printf("Start scanning... \n");
+		get_svrdata()->wifi_sta_available = false;
 		ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
 
 		uint16_t ap_num;
@@ -386,28 +377,26 @@ void scann_wifi_around()
 
 		printf("Found %d access points:\n", ap_num);
 
-		printf("               SSID              | Channel | RSSI |   MAC \n\n");
-		printf("--------------------------------------------------------------------------\n");
+		// printf("               SSID              | Channel | RSSI |   MAC \n\n");
+		// printf("-----------------------------------------------------------------------\n");
 		for (int i = 0; i < ap_num; i++)
 		{
-			printf("%32s | %7d | %4d   %2x:%2x:%2x:%2x:%2x:%2x   \n", ap_records[i].ssid, ap_records[i].primary, ap_records[i].rssi, *ap_records[i].bssid, *(ap_records[i].bssid + 1), *(ap_records[i].bssid + 2), *(ap_records[i].bssid + 3), *(ap_records[i].bssid + 4), *(ap_records[i].bssid + 5));
+			// printf("%32s | %7d | %4d   %2x:%2x:%2x:%2x:%2x:%2x   \n", ap_records[i].ssid, ap_records[i].primary, ap_records[i].rssi, *ap_records[i].bssid, *(ap_records[i].bssid + 1), *(ap_records[i].bssid + 2), *(ap_records[i].bssid + 3), *(ap_records[i].bssid + 4), *(ap_records[i].bssid + 5));
 
 			char ref[33];
 			memcpy(ref, ap_records[i].ssid, 33);
 			char test[33];
 			memcpy(test, my_struct.SSID, 33);
 			// printf(" \n %s %s \n "test2,test);
-			if (strcmp(ref, test) == NULL)
+			// printf("ref %s, test%s", ref, test);
+			if (strcmp(ref, test) == 0)
 			{
-				//printf("\n\n\nyoupi\n\n\n");
+				printf("\n\n\nyoupi\n\n\n");
 				get_svrdata()->wifi_sta_available = true;
 			}
-			else{
-				get_svrdata()->wifi_sta_available = false;
-			}
 		}
-		printf("--------------------------------------------------------------------------\n");
-		printf("\n\n ICI SSID ts_credentials\n ######### %s ####### \n", my_struct.SSID);
+		// printf("-----------------------------------------------------------------------\n");
+		// printf("\n\n ICI SSID ts_credentials\n ######### %s ####### \n", my_struct.SSID);
 	}
 	//############################################
 }

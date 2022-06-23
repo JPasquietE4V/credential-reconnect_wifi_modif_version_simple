@@ -26,7 +26,7 @@ void xtask_wifi_scanning(void *args)
 		// COMPLEXE
 		if (get_svrdata()->wifi_initialized == true)
 		{
-			printf("\n\n\n ############## wifi is initalised, so I can scann ######################### \n\n");
+			//printf("\n\n\n ############## wifi is initalised, so I can scann ######################### \n\n");
 			scann_wifi_around();
 		}
 			vTaskDelay(15000 / portTICK_PERIOD_MS);
