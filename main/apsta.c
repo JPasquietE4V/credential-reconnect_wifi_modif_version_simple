@@ -177,7 +177,7 @@ bool wifi_apsta(int timeout_ms)
 		/**********************************************/
 
 		/************* MISE A JOUR DE LA CONFIG	*************/
-		printf("\n\n\n MISE A JOUR DE LA CONFIG");
+		printf("\n\n\n MISE A JOUR DE LA CONFIG\n");
 		strcpy((char *)(get_svrdata()->sta_config.sta.ssid), my_struct.SSID);
 		strcpy((char *)(get_svrdata()->sta_config.sta.password), my_struct.PASS);
 	}

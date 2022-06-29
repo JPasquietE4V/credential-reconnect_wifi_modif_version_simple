@@ -90,11 +90,13 @@
                 return true;
             };
 
-        };
-            function remove_wifi_fct() {
+            document.getElementById("btn_remove_wifi").onclick = function () {
                 var x = document.getElementById("selection_reseau");
                 x.remove(x.selectedIndex);
-            }
+
+                conn.send('SUPP'.concat(' : ', selection_reseau.value));
+            };
+        };
     </script>
 
 
@@ -236,11 +238,8 @@
                 </select>
             </form>
             <br>
-            <!--<input type="submit" value="Selectionner" > 
-        <button type="button" style="margin-left:15px; " > Modifier </button> -->
-            <!-- <button onclick="myFunction()" id="flush"
-                    style="margin-left:15px; background-color:rgb(200, 0, 0); color:white;"> Effacer le wifi </button>-->
-            <button onclick="remove_wifi_fct()" style="margin-left:15px; background-color:rgb(200, 0, 0); color:white;">
+            <button onclick="remove_wifi_fct()" id="btn_remove_wifi"
+                style="margin-left:15px; background-color:rgb(200, 0, 0); color:white;">
                 Effacer le wifi </button>
 
 

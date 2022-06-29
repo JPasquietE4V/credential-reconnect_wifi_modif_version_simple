@@ -170,8 +170,8 @@ esp_err_t ws_handler(httpd_req_t *req)
 
             // char msg_get[STRLN]="                ";
             ts_credentials my_struct;
-           // strcpy(my_struct.SSID, "  ");
-           // strcpy(my_struct.PASS, "  ");
+            // strcpy(my_struct.SSID, "  ");
+            // strcpy(my_struct.PASS, "  ");
 
             // char new_SSID[STRLN] = "E4V-Bordeaux";
             // char new_PASS[STRLN] = "E3FE63E566E3FE63E566";
@@ -221,7 +221,7 @@ esp_err_t ws_handler(httpd_req_t *req)
 
                 /******** NVS WRITE SSID *******/
                 strcpy(my_struct.SSID, sub_ssid);
-               // printf("\n\n SSID : %s <- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n", sub_ssid);
+                // printf("\n\n SSID : %s <- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n", sub_ssid);
                 /*******************************/
 
                 xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_SSID);
@@ -231,9 +231,9 @@ esp_err_t ws_handler(httpd_req_t *req)
             {
                 /*--------------------------------------------------------*/
                 err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
-                                   &s);
+                                    &s);
                 strcpy(sub_ssid, my_struct.SSID);
-               // printf("============>get SSID = %s\n", sub_ssid);
+                // printf("============>get SSID = %s\n", sub_ssid);
                 /*--------------------------------------------------------*/
 
                 // uint8_t taille = ws_pkt.len;
@@ -247,14 +247,32 @@ esp_err_t ws_handler(httpd_req_t *req)
                 set_pwd(sub_pwd);
                 /******** NVS WRITE PASS *******/
                 strcpy(my_struct.PASS, sub_pwd);
-               // printf("\n\n PASS : %s <- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n", sub_pwd);
+                // printf("\n\n PASS : %s <- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n", sub_pwd);
                 /*******************************/
                 xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_PASS);
             }
 
+            if (strstr((char *)ws_pkt.payload, "SUPP"))
+            {
+
+                
+
+                //set_ssid(sub_ssid);
+                //set_pwd(sub_pwd);
+
+                /******** NVS WRITE SSID *******/
+                strcpy(my_struct.SSID, " ");
+                strcpy(my_struct.PASS, " ");
+                // printf("\n\n SSID : %s <- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n", sub_ssid);
+                /*******************************/
+
+                xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_SSID);
+                xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_PASS);
+            }
+
             /******** ECRITURE NVS***********/
-           // printf("#########  SUB_SSID = %s ##########  \n", sub_ssid);
-           // printf("#########  SUB_PASS = %s ##########  \n", sub_pwd);
+            // printf("#########  SUB_SSID = %s ##########  \n", sub_ssid);
+            // printf("#########  SUB_PASS = %s ##########  \n", sub_pwd);
             s = sizeof(ts_credentials) / sizeof(uint8_t);
             err3 = nvs_set_blob(my_handle, "ssid", (uint8_t *)&my_struct,
                                 s);
@@ -280,8 +298,6 @@ esp_err_t ws_handler(httpd_req_t *req)
             default:
                 printf("Error (%s) reading!\n", esp_err_to_name(err3));
             }
-
-            
         }
 
         /********************************/
