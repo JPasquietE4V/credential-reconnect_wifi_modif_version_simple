@@ -37,24 +37,24 @@ void setup_httpws(psapstadata_t psvdata)
     psvdata->ws.is_websocket = true;
 }
 
-char *get_ssid()
+char *get_ssid(int p)
 {
-    return get_svrdata()->credentials.SSID; // get_svrdata()->SSID;
+    return get_svrdata()->credentials[p].SSID; //.SSID[0] // get_svrdata()->SSID;
 }
 
-char *get_pwd()
+char *get_pwd(int p)
 {
-    return get_svrdata()->credentials.PASS; // get_svrdata()->PWD;
+    return get_svrdata()->credentials[p].PASS; //.PASS[0] // get_svrdata()->PWD;
 }
 
-void set_ssid(char *var_ssid)
+void set_ssid(char* var_ssid, int par_int_n)
 {
-    strcpy(get_svrdata()->credentials.SSID, var_ssid); // strcpy(get_svrdata()->SSID,var_ssid);
+    strcpy(get_svrdata()->credentials[par_int_n].SSID, var_ssid); //.SSID[0] // strcpy(get_svrdata()->SSID,var_ssid);
 }
 
-void set_pwd(char *var_pwd)
+void set_pwd(char* var_pwd, int par_int_n)
 {
-    strcpy(get_svrdata()->credentials.PASS, var_pwd); // strcpy(get_svrdata()->PWD,var_pwd);
+    strcpy(get_svrdata()->credentials[par_int_n].PASS, var_pwd); //.PASS[0] // strcpy(get_svrdata()->PWD,var_pwd);
 }
 
 /*
@@ -164,28 +164,16 @@ esp_err_t ws_handler(httpd_req_t *req)
         else
         {
             printf("nvs_open Done\n");
-
             // Read
-            // printf("Reading restart counter from NVS ... \n\n");
-
-            // char msg_get[STRLN]="                ";
-            ts_credentials my_struct;
-           // strcpy(my_struct.SSID, "  ");
-           // strcpy(my_struct.PASS, "  ");
-
-            // char new_SSID[STRLN] = "E4V-Bordeaux";
-            // char new_PASS[STRLN] = "E3FE63E566E3FE63E566";
+            ts_credentials my_struct[NB_WIFI_MAX];
 
             size_t s = sizeof(ts_credentials) / sizeof(uint8_t);
-            // err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
-            //                    &s);
-            // printf("-->get SSID = %s\n", my_struct.SSID);
 
-            my_struct.SSID[STREND] = 0; // au cas ou
-            my_struct.PASS[STREND] = 0; // au cas ou
-
-            // printf("-->get SSID = %s\n", my_struct.SSID);
-            // printf("-->get PASS = %s %d\n\n", my_struct.PASS, strlen(my_struct.PASS));
+            for (int i = 0; i < NB_WIFI_MAX; i++)
+            {
+                my_struct[i].SSID[STREND] = 0; // au cas ou
+                my_struct[i].PASS[STREND] = 0; // au cas ou
+            }
 
             /* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
             buf = calloc(1, ws_pkt.len + 1);
@@ -207,60 +195,58 @@ esp_err_t ws_handler(httpd_req_t *req)
 
             if (strstr((char *)ws_pkt.payload, "SSID"))
             {
-
-                // uint8_t taille = ws_pkt.len;
-                // char sub_ssid[taille];
                 for (int i = 0; i < taille; i++)
                 {
+                    printf("1 \n\n\n\n");
                     sub_ssid[i] = *(ws_pkt.payload + 7 + i);
                 }
 
                 sub_ssid[taille] = '\0';
+                printf("2 \n\n\n");
+                set_ssid(sub_ssid, 1); ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                set_ssid(sub_ssid);
-
-                /******** NVS WRITE SSID *******/
-                strcpy(my_struct.SSID, sub_ssid);
-               // printf("\n\n SSID : %s <- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n", sub_ssid);
-                /*******************************/
-
+                printf("3 \n\n\n\n\n");
+                for (int i = 0; i < NB_WIFI_MAX; i++)
+                {
+                    strcpy(my_struct[i].SSID, sub_ssid);
+                    printf("4 \n\n\n\n\n");
+                }
+                printf("5 \n\n\n\n\n");
                 xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_SSID);
             }
 
             if (strstr((char *)ws_pkt.payload, "PASS"))
             {
-                /*--------------------------------------------------------*/
                 err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
-                                   &s);
-                strcpy(sub_ssid, my_struct.SSID);
-               // printf("============>get SSID = %s\n", sub_ssid);
-                /*--------------------------------------------------------*/
-
-                // uint8_t taille = ws_pkt.len;
-                // char sub_pwd[taille];
+                                    &s);
+                for (int i = 0; i < NB_WIFI_MAX; i++)
+                {
+                    strcpy(sub_ssid, my_struct[i].SSID);
+                }
                 for (int i = 0; i < taille; i++)
                 {
 
                     sub_pwd[i] = *(ws_pkt.payload + 7 + i);
                 }
                 sub_pwd[taille] = '\0';
-                set_pwd(sub_pwd);
-                /******** NVS WRITE PASS *******/
-                strcpy(my_struct.PASS, sub_pwd);
-               // printf("\n\n PASS : %s <- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n", sub_pwd);
-                /*******************************/
+                set_pwd(sub_pwd, 1);
+                for (int i = 0; i < NB_WIFI_MAX; i++)
+                {
+                    strcpy(my_struct[i].PASS, sub_pwd);
+                }
                 xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_PASS);
             }
 
             /******** ECRITURE NVS***********/
-           // printf("#########  SUB_SSID = %s ##########  \n", sub_ssid);
-           // printf("#########  SUB_PASS = %s ##########  \n", sub_pwd);
             s = sizeof(ts_credentials) / sizeof(uint8_t);
             err3 = nvs_set_blob(my_handle, "ssid", (uint8_t *)&my_struct,
                                 s);
 
-            printf("Writing new_SSID = %s\n", my_struct.SSID);
-            printf("Writing new_PASS = %s\n", my_struct.PASS);
+            for (int i = 0; i < NB_WIFI_MAX; i++)
+            {
+                printf("Writing new_SSID = %s at position %d\n", my_struct[i].SSID, i);
+                printf("Writing new_PASS = %s at position %d\n", my_struct[i].PASS, i);
+            }
 
             vTaskDelay(100 / portTICK_PERIOD_MS);
             err3 = nvs_commit(my_handle);
@@ -280,8 +266,6 @@ esp_err_t ws_handler(httpd_req_t *req)
             default:
                 printf("Error (%s) reading!\n", esp_err_to_name(err3));
             }
-
-            
         }
 
         /********************************/

@@ -26,6 +26,7 @@
 #define CRED_MASK_INV (~(CRED_SSID | CRED_PASS))
 #define CREDENTIALS_LEN 65
 #define STREND (CREDENTIALS_LEN - 1)
+#define NB_WIFI_MAX 4
 
 typedef struct
 {
@@ -56,7 +57,7 @@ typedef struct
     wifi_config_t sta_config;
     // websocket
     char *TAGWS;
-    ts_credentials credentials;
+    ts_credentials credentials[NB_WIFI_MAX];
     httpd_uri_t credential;
     httpd_uri_t ws;
     async_resp_arg *as_resp_arg;

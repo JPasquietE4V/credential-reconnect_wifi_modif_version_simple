@@ -19,23 +19,6 @@ extern const char *TAGWS;
 #define GPIN GPIO_NUM_12
 
 static QueueHandle_t msg_queue;
-// void xtask_wifi_scanning(void *args)
-// {
-// 	while (1)
-// 	{
-// 		// printf("entrée dans la task \n");
-// 		if (get_svrdata()->wifi_initialized == true)
-// 		{
-// 			printf("\n\n\n ############## wifi is initalised, so I can scann ######################### \n\n");
-// 			//	scann_wifi_around();
-// 		}
-// 		//	printf("sortie de la task \n");
-// 		vTaskDelay(30000 / portTICK_PERIOD_MS);
-// 		//	esp_wifi_disconnect();
-// 		//	esp_wifi_stop();
-// 		vTaskDelay(100 / portTICK_PERIOD_MS);
-// 	}
-// }
 
 void xtask_blink(void *args)
 {
@@ -94,7 +77,7 @@ void xtask_evnt(void *args)
 			ESP_LOGI("Event handler", "Credentials complete");
 			vTaskDelay(50 / portTICK_PERIOD_MS);
 			ESP_LOGW("Event handler", "New credentials");
-			printf("SSID: %s, PASS: %s\n", get_ssid(), get_pwd());
+			printf("SSID: %s, PASS: %s\n", get_ssid(1), get_pwd(1)); ////////////////////////////////////////////////
 			ESP_LOGI("Event handler", "Copying credentials to sta_config.sta");
 			strcpy((char *)(get_svrdata()->sta_config.sta.ssid), get_ssid());
 			strcpy((char *)(get_svrdata()->sta_config.sta.password), get_pwd());
@@ -147,7 +130,7 @@ void app_main(void)
 		printf("GPIO pins OK\n");
 		gpio_set_level(GPIN, 0);
 		xTaskCreate(xtask_blink, "gpio_task_blink", 2048, (void *)&frequence, 2, NULL);
-		//xTaskCreate(xtask_wifi_scanning, "wifi_task_scanning", 4096, NULL, 0, NULL);
+		// xTaskCreate(xtask_wifi_scanning, "wifi_task_scanning", 4096, NULL, 0, NULL);
 	}
 
 	esp_err_t err = nvs_flash_init();
@@ -196,36 +179,32 @@ void app_main(void)
 		printf("Reading restart counter from NVS ... \n\n");
 
 		// char msg_get[STRLN]="                ";
-		ts_credentials my_struct;
-		strcpy(my_struct.SSID, "  ");
-		strcpy(my_struct.PASS, "  ");
+		ts_credentials my_struct[NB_WIFI_MAX];
+		for (int i = 0; i < NB_WIFI_MAX; i++)
+		{
+			strcpy(my_struct[i].SSID, "  ");
+			strcpy(my_struct[i].PASS, "  ");
 
-		size_t s = sizeof(ts_credentials) / sizeof(uint8_t);
-		err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
-							&s);
+			size_t s = sizeof(ts_credentials) / sizeof(uint8_t);
+			err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
+								&s);
 
-		my_struct.SSID[STREND] = 0; // au cas ou
-		my_struct.PASS[STREND] = 0; // au cas ou
+			my_struct[i].SSID[STREND] = 0; // au cas ou
+			my_struct[i].PASS[STREND] = 0; // au cas ou
 
-		printf("-->get SSID = %s\n", my_struct.SSID);
-		printf("-->get PASS = %s \n\n", my_struct.PASS);
+			printf("-->get SSID %d = %s\n", i, my_struct[i].SSID);
+			printf("-->get PASS %d = %s \n\n", i, my_struct[i].PASS);
+		}
 
-		uint32_t crc = 0;
-		char jrm[] = "Jeremy";
-		int len = strlen(jrm);
-		crc32(jrm, (len>0)?(len):0, &crc);
-		printf("################################\n");
-		printf("################################\n");
-		printf("Ref for %s = %x\n size is %d \n", jrm, crc, len);
-		printf("################################\n");
-		uint32_t crc2 = 0;
-		// char calculated[strlen(my_struct.SSID)];
-		int len2 = strlen(my_struct.SSID);
-		crc32(my_struct.SSID, (len2>0)?(len2):0, &crc2);
-		// memcpy(my_struct.SSID, my_struct.SSID,len2);
-		printf("Result got with %s = %x\n size is %d\n", my_struct.SSID, crc2, len2);
-		printf("################################\n");
-		printf("################################\n");
+		for (int i = 0; i < NB_WIFI_MAX; i++)
+		{
+			uint32_t crc = 0;
+			int len = strlen(my_struct[i].SSID);
+			crc32(my_struct[i].SSID, (len > 0) ? (len) : 0, &crc);
+			printf("Result got with %s = %x\n size is %d\n", my_struct[i].SSID, crc, len);
+			printf("################################\n");
+			printf("################################\n");
+		}
 
 		switch (err2)
 		{

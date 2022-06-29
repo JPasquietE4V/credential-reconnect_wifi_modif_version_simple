@@ -26,8 +26,8 @@
 
 char* get_ssid();
 char* get_pwd();
-void set_ssid(char* var_ssid);
-void set_pwd(char* var_pwd);
+void set_ssid(char* var_ssid, int par_int_n);
+void set_pwd(char* var_pwd, int par_int_n);
 void setup_httpws(psapstadata_t psvdata);
 
 void ws_async_send(void *arg);

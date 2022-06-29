@@ -15,19 +15,23 @@ void apsta_init()
     memset((void *)&svr_data.sta_config, 0, sizeof(wifi_config_t));
 
     svr_data.TAGWS = NULL;
-    assert(CREDENTIALS_LEN>1);
-    svr_data.credentials.SSID[0]= ' '; //SSID[0] = ' ';
-    svr_data.credentials.SSID[1] = 0;
-    svr_data.credentials.PASS[0] = ' ';
-    svr_data.credentials.PASS[1] = 0;
+    assert(CREDENTIALS_LEN > 1);
+    for (int i = 0; i < NB_WIFI_MAX ; i++)
+    {
+        svr_data.credentials[i].SSID[0] = ' '; // SSID[0] = ' ';
+        svr_data.credentials[i].SSID[1] = 0;
+        svr_data.credentials[i].PASS[0] = ' ';
+        svr_data.credentials[i].PASS[1] = 0;
+    }
     memset((void *)&svr_data.credential, 0, sizeof(httpd_uri_t));
     memset((void *)&svr_data.ws, 0, sizeof(httpd_uri_t));
     svr_data.as_resp_arg = NULL;
     svr_data.fd = 0;
     memset(&svr_data.ws_pkt, 0, sizeof(httpd_ws_frame_t));
-    svr_data.trig_resp_arg = NULL;    
+    svr_data.trig_resp_arg = NULL;
 }
 
-psapstadata_t get_svrdata(){
+psapstadata_t get_svrdata()
+{
     return &svr_data;
 }
