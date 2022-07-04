@@ -18,9 +18,9 @@ void apsta_init()
     assert(CREDENTIALS_LEN > 1);
     for (int i = 0; i < NB_WIFI_MAX ; i++)
     {
-        svr_data.credentials[i].SSID[0] = ' '; // SSID[0] = ' ';
+        svr_data.credentials[i].SSID[0] = 0; // SSID[0] = ' ';
         svr_data.credentials[i].SSID[1] = 0;
-        svr_data.credentials[i].PASS[0] = ' ';
+        svr_data.credentials[i].PASS[0] = 0;
         svr_data.credentials[i].PASS[1] = 0;
     }
     memset((void *)&svr_data.credential, 0, sizeof(httpd_uri_t));

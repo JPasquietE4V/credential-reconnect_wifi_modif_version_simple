@@ -178,8 +178,16 @@ void app_main(void)
 		// Read
 		printf("Reading restart counter from NVS ... \n\n");
 
-		// char msg_get[STRLN]="                ";
-		ts_credentials my_struct[NB_WIFI_MAX];
+		// REMARQUE 1
+		// ** pourquoi déclarer cette structure de données si on l'as déjà sur svr_data.credentials ??? **
+		// ** voir apsta_shared.h ligne 60 **
+		//ts_credentials my_struct[NB_WIFI_MAX];
+		//--> ts_credentials my_struct
+
+		// REMARQUE 2
+		// Pourquoi lire plusieurs fois en boucle avec nvs_get_blob() sachant que nous avons vu que
+		// cela ne marche pas et il faut lire TOUT D'UN COUP
+		#if 0
 		for (int i = 0; i < NB_WIFI_MAX; i++)
 		{
 			strcpy(my_struct[i].SSID, "  ");
@@ -195,13 +203,26 @@ void app_main(void)
 			printf("-->get SSID %d = %s\n", i, my_struct[i].SSID);
 			printf("-->get PASS %d = %s \n\n", i, my_struct[i].PASS);
 		}
+		#endif //
+		
+		// Calcul de la taille totale en octates de TOUTES les credentials
+		size_t taille_totale = NB_WIFI_MAX*sizeof(ts_credentials) / sizeof(uint8_t);
+		// lecture de TOUT LE BLOC D'UN SEUL COUP
+		err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)(get_svrdata()->credentials), &taille_totale);
 
 		for (int i = 0; i < NB_WIFI_MAX; i++)
 		{
+			//my_struct[i].SSID[STREND] = 0; // au cas ou
+			//my_struct[i].PASS[STREND] = 0; // au cas ou
+			get_svrdata()->credentials[i].SSID[STREND] = 0; // au cas ou
+			get_svrdata()->credentials[i].PASS[STREND] = 0; // au cas ou
 			uint32_t crc = 0;
-			int len = strlen(my_struct[i].SSID);
-			crc32(my_struct[i].SSID, (len > 0) ? (len) : 0, &crc);
-			printf("Result got with %s = %x\n size is %d\n", my_struct[i].SSID, crc, len);
+			//int len = strlen(my_struct[i].SSID);
+			int len = strlen(get_svrdata()->credentials[i].SSID);
+			//crc32(my_struct[i].SSID, (len > 0) ? (len) : 0, &crc);
+			crc32(get_svrdata()->credentials[i].SSID, (len > 0) ? (len) : 0, &crc);
+			//printf("Result got with %s = %x\n size is %d\n", my_struct[i].SSID, crc, len);
+			printf("Result got with %s = %x\n size is %d\n", get_svrdata()->credentials[i].SSID, crc, len);
 			printf("################################\n");
 			printf("################################\n");
 		}

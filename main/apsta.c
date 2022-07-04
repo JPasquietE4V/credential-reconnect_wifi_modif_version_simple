@@ -140,6 +140,9 @@ bool wifi_apsta(int timeout_ms)
 		// Read
 		printf("Reading restart counter from NVS ... \n\n");
 
+		// Memes remarques que sur la ligne 90 du main.c 
+		// du coup j'ai du mal a comprendre pouqoui cette redondance de code 
+		#if 0
 		ts_credentials my_struct[NB_WIFI_MAX];
 		for (int i = 0; i < NB_WIFI_MAX ; i++)
 		{
@@ -156,6 +159,11 @@ bool wifi_apsta(int timeout_ms)
 			printf("-->get SSID %d = %s\n", i, my_struct[i].SSID);
 			printf("-->get PASS %d = %s \n\n", i, my_struct[i].PASS);
 		}
+		#endif
+
+		size_t taille_totale = NB_WIFI_MAX * sizeof(ts_credentials) / sizeof(uint8_t);
+		// lecture de TOUT LE BLOC D'UN SEUL COUP
+		esp_err_t err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)(get_svrdata()->credentials), &taille_totale);
 
 		switch (err2)
 		{
@@ -180,8 +188,10 @@ bool wifi_apsta(int timeout_ms)
 		printf("\n\n\n MISE A JOUR DE LA CONFIG\n");
 		for (int i = 0; i < NB_WIFI_MAX ; i++)
 		{
-			strcpy((char *)(get_svrdata()->sta_config.sta.ssid), my_struct[i].SSID);
-			strcpy((char *)(get_svrdata()->sta_config.sta.password), my_struct[i].PASS);
+			//strcpy((char *)(get_svrdata()->sta_config.sta.ssid), my_struct[i].SSID);
+			//strcpy((char *)(get_svrdata()->sta_config.sta.password), my_struct[i].PASS);
+			strcpy((char *)(get_svrdata()->sta_config.sta.ssid), get_svrdata()->credentials[i].SSID);
+			strcpy((char *)(get_svrdata()->sta_config.sta.password), get_svrdata()->credentials[i].PASS);
 		}
 	}
 
