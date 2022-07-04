@@ -47,12 +47,12 @@ char *get_pwd(int p)
     return get_svrdata()->credentials[p].PASS; //.PASS[0] // get_svrdata()->PWD;
 }
 
-void set_ssid(char* var_ssid, int par_int_n)
+void set_ssid(char *var_ssid, int par_int_n)
 {
     strcpy(get_svrdata()->credentials[par_int_n].SSID, var_ssid); //.SSID[0] // strcpy(get_svrdata()->SSID,var_ssid);
 }
 
-void set_pwd(char* var_pwd, int par_int_n)
+void set_pwd(char *var_pwd, int par_int_n)
 {
     strcpy(get_svrdata()->credentials[par_int_n].PASS, var_pwd); //.PASS[0] // strcpy(get_svrdata()->PWD,var_pwd);
 }
@@ -115,6 +115,9 @@ esp_err_t credential_get_handler(httpd_req_t *req) // ledOFF_get_handler --> hel
 
 esp_err_t ws_handler(httpd_req_t *req)
 {
+    const size_t size_un_wifi = sizeof(ts_credentials) / sizeof(uint8_t);
+    const size_t size_tous_les_wifis = NB_WIFI_MAX * sizeof(ts_credentials) / sizeof(uint8_t);
+
     if (req->method == HTTP_GET)
     {
         ESP_LOGI(TAGWS, "Handshake done, the new connection was opened");
@@ -167,7 +170,7 @@ esp_err_t ws_handler(httpd_req_t *req)
             // Read
             ts_credentials my_struct[NB_WIFI_MAX];
 
-            size_t s = sizeof(ts_credentials) / sizeof(uint8_t);
+            size_t size_un_wifi = sizeof(ts_credentials) / sizeof(uint8_t);
 
             for (int i = 0; i < NB_WIFI_MAX; i++)
             {
@@ -197,19 +200,15 @@ esp_err_t ws_handler(httpd_req_t *req)
             {
                 for (int i = 0; i < taille; i++)
                 {
-                    printf("1 \n\n\n\n");
                     sub_ssid[i] = *(ws_pkt.payload + 7 + i);
                 }
 
                 sub_ssid[taille] = '\0';
-                printf("2 \n\n\n");
                 set_ssid(sub_ssid, 1); ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                printf("3 \n\n\n\n\n");
                 for (int i = 0; i < NB_WIFI_MAX; i++)
                 {
                     strcpy(my_struct[i].SSID, sub_ssid);
-                    printf("4 \n\n\n\n\n");
                 }
                 printf("5 \n\n\n\n\n");
                 xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_SSID);
@@ -218,7 +217,7 @@ esp_err_t ws_handler(httpd_req_t *req)
             if (strstr((char *)ws_pkt.payload, "PASS"))
             {
                 err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
-                                    &s);
+                                    &size_un_wifi);
                 for (int i = 0; i < NB_WIFI_MAX; i++)
                 {
                     strcpy(sub_ssid, my_struct[i].SSID);
@@ -238,15 +237,18 @@ esp_err_t ws_handler(httpd_req_t *req)
             }
 
             /******** ECRITURE NVS***********/
-            s = sizeof(ts_credentials) / sizeof(uint8_t);
-            err3 = nvs_set_blob(my_handle, "ssid", (uint8_t *)&my_struct,
-                                s);
 
-            for (int i = 0; i < NB_WIFI_MAX; i++)
+            // ########### AJOUTS RECENTS ##############
+            for (int i = 1; i < NB_WIFI_MAX; i++)
             {
                 printf("Writing new_SSID = %s at position %d\n", my_struct[i].SSID, i);
                 printf("Writing new_PASS = %s at position %d\n", my_struct[i].PASS, i);
+                strcpy(my_struct[i].SSID, "0");
+                strcpy(my_struct[i].PASS, "0");
             }
+            //##########################################
+            err3 = nvs_set_blob(my_handle, "ssid", (uint8_t *)&my_struct,
+                                size_tous_les_wifis);
 
             vTaskDelay(100 / portTICK_PERIOD_MS);
             err3 = nvs_commit(my_handle);

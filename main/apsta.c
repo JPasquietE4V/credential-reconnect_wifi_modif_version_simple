@@ -9,7 +9,7 @@ void event_handler(void *arg, esp_event_base_t event_base,
 {
 	if (event_id == WIFI_EVENT_STA_DISCONNECTED)
 	{
-		printf(" \n Station disconnected \n");
+		//printf(" \n Station disconnected \n");
 		get_svrdata()->wifi_sta_connected = false;
 	}
 
