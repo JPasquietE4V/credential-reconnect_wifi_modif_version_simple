@@ -218,13 +218,19 @@ void app_main(void)
 			get_svrdata()->credentials[i].PASS[STREND] = 0; // au cas ou
 			uint32_t crc = 0;
 			//int len = strlen(my_struct[i].SSID);
-			int len = strlen(get_svrdata()->credentials[i].SSID);
-			//crc32(my_struct[i].SSID, (len > 0) ? (len) : 0, &crc);
-			crc32(get_svrdata()->credentials[i].SSID, (len > 0) ? (len) : 0, &crc);
-			//printf("Result got with %s = %x\n size is %d\n", my_struct[i].SSID, crc, len);
-			printf("Result got with %s = %x\n size is %d\n", get_svrdata()->credentials[i].SSID, crc, len);
+			char concat_for_crc[] ="";
+			strcat(concat_for_crc, get_svrdata()->credentials[i].SSID);
+			strcat(concat_for_crc, get_svrdata()->credentials[i].PASS);
+			int len = strlen(get_svrdata()->credentials[i].SSID)+strlen(get_svrdata()->credentials[i].PASS);
+			////crc32(my_struct[i].SSID, (len > 0) ? (len) : 0, &crc);
+			////printf("Result got with %s = %x\n size is %d\n", my_struct[i].SSID, crc, len);
+			//crc32(get_svrdata()->credentials[i].SSID, (len > 0) ? (len) : 0, &crc);
+			crc32(concat_for_crc, (len > 0) ? (len) : 0, &crc);
+			printf("Result got with %s = %x\n pass is : %s \n size is %d\n buf is : %s\n CRC32 is : %x\n", get_svrdata()->credentials[i].SSID, crc, get_svrdata()->credentials[i].PASS, len, concat_for_crc, get_svrdata()->credentials[i].CRC32);
 			printf("################################\n");
 			printf("################################\n");
+			get_svrdata()->credentials[i].CRC32 = crc; //***** ? *****
+
 		}
 
 		switch (err2)

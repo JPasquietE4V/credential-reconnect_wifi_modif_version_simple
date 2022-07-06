@@ -9,6 +9,7 @@
 
 #include "websocket.h"
 #include "apsta.h"
+#include "simplecrc.h"
 
 #define CREDENTIALS_LEN 65
 #define STREND (CREDENTIALS_LEN - 1)
@@ -166,11 +167,12 @@ esp_err_t ws_handler(httpd_req_t *req)
         }
         else
         {
+
             printf("nvs_open Done\n");
             // Read
             // REMARQUE 3 pourquoi déclarer cette structure de données si on l'as déjà sur svr_data.credentials
             // meme remarque que sur main.c ligne 182
-            //ts_credentials my_struct[NB_WIFI_MAX]; // <--- NON, PAS BESOIN DE CETTE REDONDANCE ! 
+            // ts_credentials my_struct[NB_WIFI_MAX]; // <--- NON, PAS BESOIN DE CETTE REDONDANCE !
 
             size_t size_un_wifi = sizeof(ts_credentials) / sizeof(uint8_t);
 
@@ -178,13 +180,13 @@ esp_err_t ws_handler(httpd_req_t *req)
             {
                 get_svrdata()->credentials[i].SSID[STREND] = 0;
                 get_svrdata()->credentials[i].PASS[STREND] = 0;
-               // my_struct[i].SSID[STREND] = 0; // au cas ou
-               // my_struct[i].PASS[STREND] = 0; // au cas ou
+                // my_struct[i].SSID[STREND] = 0; // au cas ou
+                // my_struct[i].PASS[STREND] = 0; // au cas ou
             }
 
             /* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
             // REMARQUE 1 : je ne comprends pas le role du buf ici, jamais vraiment utilisé....
-            buf = calloc(1, ws_pkt.len + 1); 
+            buf = calloc(1, ws_pkt.len + 1);
             if (buf == NULL)
             {
                 ESP_LOGE(TAGWS, "Failed to calloc memory for buf");
@@ -209,60 +211,118 @@ esp_err_t ws_handler(httpd_req_t *req)
                 }
 
                 sub_ssid[taille] = '\0';
-                set_ssid(sub_ssid, 1); ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                set_ssid(sub_ssid, 0); ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 for (int i = 0; i < NB_WIFI_MAX; i++)
                 {
-                    //strcpy(my_struct[i].SSID, sub_ssid);
+                    // strcpy(my_struct[i].SSID, sub_ssid);
                     strcpy(get_svrdata()->credentials[i].SSID, sub_ssid);
                 }
-                printf("5 \n\n\n\n\n");
                 xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_SSID);
+                printf("\n\nSUB SSID = %s\n", sub_ssid);
             }
 
-            // REMARQUE 2 pourquoi faire get_blob ici ???? 
+            // REMARQUE 2 pourquoi faire get_blob ici ????
 
             if (strstr((char *)ws_pkt.payload, "PASS"))
             {
-                //err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct, // <<<--- ???
-                //                    &size_un_wifi);
-                err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&get_svrdata()->credentials, 
+                // err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct, // <<<--- ???
+                //                     &size_un_wifi);
+                err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&get_svrdata()->credentials,
                                     &size_un_wifi);
 
                 for (int i = 0; i < NB_WIFI_MAX; i++)
                 {
-                    //strcpy(sub_ssid, my_struct[i].SSID);
-                    strcpy(sub_ssid, get_svrdata()->credentials[i].SSID);
+                    if (get_svrdata()->credentials[i].CRC32 == 0xf4dbdf21)
+                    {
+                        printf("####################### TRUE SSID #############################\n");
+                        printf("i=%d \n ssid =%s \n crc=%d\n\n", i, get_svrdata()->credentials[i].SSID, get_svrdata()->credentials[i].CRC32);
+                        // strcpy(sub_ssid, my_struct[i].SSID);
+                        strcpy(sub_ssid, get_svrdata()->credentials[i].SSID);
+                        break;
+                    }
+                    else
+                    {
+                        // printf("####################### FALSE SSID #############################\n");
+                    }
                 }
                 for (int i = 0; i < taille; i++)
                 {
-
                     sub_pwd[i] = *(ws_pkt.payload + 7 + i);
                 }
                 sub_pwd[taille] = '\0';
-                set_pwd(sub_pwd, 1);
+                set_pwd(sub_pwd, 0);
+                printf("\n");
                 for (int i = 0; i < NB_WIFI_MAX; i++)
                 {
-                    //strcpy(my_struct[i].PASS, sub_pwd);
-                    strcpy(get_svrdata()->credentials[i].PASS, sub_pwd);
+                    // strcpy(my_struct[i].PASS, sub_pwd);
+                    if (get_svrdata()->credentials[i].CRC32 == (int)0xf4dbdf21)
+                    {
+                        printf("####################### TRUE PASS #############################\n");
+                        printf("i=%d \n ssid =%s \n crc=%d\n\n", i, get_svrdata()->credentials[i].SSID, get_svrdata()->credentials[i].CRC32);
+                        strcpy(get_svrdata()->credentials[i].PASS, sub_pwd);
+                    }
+                    else
+                    {
+                        // printf("####################### FALSE PASS #############################\n");
+                    }
                 }
                 xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_PASS);
+                printf("\n\nSUB SSID = %s\nSUB PASS = %s\n\n", sub_ssid, sub_pwd);
             }
 
             /******** ECRITURE NVS***********/ //<--- REMARQUE 4 Mais tas deja faire un get_blob avant....
-            //  
-
+            //
             // ########### AJOUTS RECENTS ##############
-            for (int i = 1; i < NB_WIFI_MAX; i++)
+            for (int i = 0; i < NB_WIFI_MAX; i++)
             {
-                printf("Writing new_SSID = %s at position %d\n", get_svrdata()->credentials[i].SSID, i);
-                printf("Writing new_PASS = %s at position %d\n", get_svrdata()->credentials[i].PASS, i);
-                strcpy(get_svrdata()->credentials[i].SSID, "0");
-                strcpy(get_svrdata()->credentials[i].PASS, "0");
+                //                printf("****************\n");
+                //                printf("Writing new_SSID = %s at position %d\n", get_svrdata()->credentials[i].SSID, i);
+                //                printf("Writing new_PASS = %s at position %d\n", get_svrdata()->credentials[i].PASS, i);
+                // strcpy(get_svrdata()->credentials[i].SSID, "0");
+                // strcpy(get_svrdata()->credentials[i].PASS, "0");
+                //           }
+                printf("\n");
+
+                /*
+                //#############################################a
+                // err3 = nvs_set_blob(my_handle, "ssid", (uint8_t *)&my_struct,
+                //                     size_tous_les_wifis);
+
+                // printf("\n\n");
+                // for (int i = 0; i < NB_WIFI_MAX; i++)
+                // {
+                //     char buf[] = "";
+                //     strcat ((char *)buf, get_svrdata()->credentials[i].SSID);
+                //     strcat (buf, get_svrdata()->credentials[i].PASS);
+                //     uint32_t crc = 0;
+                //     int len = strlen(buf);
+                //     printf("buf = %s \n", buf);
+                //     crc32(buf, (len > 0) ? (len) : 0, &crc);
+                //     get_svrdata()->credentials[i].CRC32 = crc;
+                //     printf("Writing new_CRC = %x at position %d\n", get_svrdata()->credentials[i].CRC32, i);
+                // }*/
+
+                /************* CRC ********************/
+                //           for (int i = 0; i < NB_WIFI_MAX; i++)
+                //           {
+                uint32_t crc = 0;
+                char concat_for_crc[] = "";
+                strcat(concat_for_crc, get_svrdata()->credentials[i].SSID);
+                strcat(concat_for_crc, get_svrdata()->credentials[i].PASS);
+                int len = strlen(get_svrdata()->credentials[i].SSID) + strlen(get_svrdata()->credentials[i].PASS);
+                crc32(concat_for_crc, (len > 0) ? (len) : 0, &crc);
+                get_svrdata()->credentials[i].CRC32 = crc;
+                //                printf(" ssid is %s\n pass is : %s \n size is %d\n buf is : %s\n CRC32 is : %x\n", get_svrdata()->credentials[i].SSID,
+                //                       get_svrdata()->credentials[i].PASS,
+                //                       len,
+                //                       concat_for_crc,
+                //                       get_svrdata()->credentials[i].CRC32);
+                //                printf("****************\n\n");
             }
-            //#############################################a
-           // err3 = nvs_set_blob(my_handle, "ssid", (uint8_t *)&my_struct,
-           //                     size_tous_les_wifis);
+            //            printf("____________________________________\n");
+            /**************************************/
+
             err3 = nvs_set_blob(my_handle, "ssid", (uint8_t *)&get_svrdata()->credentials,
                                 size_tous_les_wifis);
 
