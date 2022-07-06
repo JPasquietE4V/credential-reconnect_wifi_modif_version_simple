@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "simplecrc.h"
+#include <string.h>
+
 
 uint32_t crc32_for_byte(uint32_t r)
 {
@@ -10,8 +12,13 @@ uint32_t crc32_for_byte(uint32_t r)
   return r ^ (uint32_t)0xFF000000L;
 }
 
-void crc32(const void *data, size_t n_bytes, uint32_t *crc)
+void crc32(const char* p_ssid, const char* p_pass, uint32_t *crc)
 {
+  char data[] = "";
+  strcat(data, p_ssid);
+  strcat(data, p_pass);
+  int n_bytes = strlen(p_ssid) + strlen(p_pass);
+  
   static uint32_t table[0x100];
   if (!*table)
     for (size_t i = 0; i < 0x100; ++i)

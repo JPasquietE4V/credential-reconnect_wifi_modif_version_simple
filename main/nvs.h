@@ -11,6 +11,6 @@
 
 
 void fct_write_flash(char* p_key, uint8_t* p_out_value, size_t p_length);
-void fct_read_flash(char* p_key, uint8_t* p_out_value, size_t p_length);
+void fct_read_flash(char* p_key, uint8_t* p_out_value, size_t* p_length);
 
 #endif

@@ -178,16 +178,16 @@ void app_main(void)
 		// Read
 		printf("Reading restart counter from NVS ... \n\n");
 
-		// REMARQUE 1
-		// ** pourquoi déclarer cette structure de données si on l'as déjà sur svr_data.credentials ??? **
-		// ** voir apsta_shared.h ligne 60 **
-		//ts_credentials my_struct[NB_WIFI_MAX];
-		//--> ts_credentials my_struct
+// REMARQUE 1
+// ** pourquoi déclarer cette structure de données si on l'as déjà sur svr_data.credentials ??? **
+// ** voir apsta_shared.h ligne 60 **
+// ts_credentials my_struct[NB_WIFI_MAX];
+//--> ts_credentials my_struct
 
-		// REMARQUE 2
-		// Pourquoi lire plusieurs fois en boucle avec nvs_get_blob() sachant que nous avons vu que
-		// cela ne marche pas et il faut lire TOUT D'UN COUP
-		#if 0
+// REMARQUE 2
+// Pourquoi lire plusieurs fois en boucle avec nvs_get_blob() sachant que nous avons vu que
+// cela ne marche pas et il faut lire TOUT D'UN COUP
+#if 0
 		for (int i = 0; i < NB_WIFI_MAX; i++)
 		{
 			strcpy(my_struct[i].SSID, "  ");
@@ -203,34 +203,36 @@ void app_main(void)
 			printf("-->get SSID %d = %s\n", i, my_struct[i].SSID);
 			printf("-->get PASS %d = %s \n\n", i, my_struct[i].PASS);
 		}
-		#endif //
-		
+#endif //
+
 		// Calcul de la taille totale en octates de TOUTES les credentials
-		size_t taille_totale = NB_WIFI_MAX*sizeof(ts_credentials) / sizeof(uint8_t);
+		size_t taille_totale = NB_WIFI_MAX * sizeof(ts_credentials) / sizeof(uint8_t);
 		// lecture de TOUT LE BLOC D'UN SEUL COUP
-		err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)(get_svrdata()->credentials), &taille_totale);
+		// err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)(get_svrdata()->credentials), &taille_totale);
+		fct_read_flash("credentials", (uint8_t *)get_svrdata()->credentials, &taille_totale);
 
 		for (int i = 0; i < NB_WIFI_MAX; i++)
 		{
-			//my_struct[i].SSID[STREND] = 0; // au cas ou
-			//my_struct[i].PASS[STREND] = 0; // au cas ou
+			// my_struct[i].SSID[STREND] = 0; // au cas ou
+			// my_struct[i].PASS[STREND] = 0; // au cas ou
 			get_svrdata()->credentials[i].SSID[STREND] = 0; // au cas ou
 			get_svrdata()->credentials[i].PASS[STREND] = 0; // au cas ou
 			uint32_t crc = 0;
-			//int len = strlen(my_struct[i].SSID);
-			char concat_for_crc[] ="";
-			strcat(concat_for_crc, get_svrdata()->credentials[i].SSID);
-			strcat(concat_for_crc, get_svrdata()->credentials[i].PASS);
-			int len = strlen(get_svrdata()->credentials[i].SSID)+strlen(get_svrdata()->credentials[i].PASS);
+			// int len = strlen(my_struct[i].SSID);
+			//char concat_for_crc[] = "";
+			//strcat(concat_for_crc, get_svrdata()->credentials[i].SSID);
+			//strcat(concat_for_crc, get_svrdata()->credentials[i].PASS);
+		//	int len = strlen(get_svrdata()->credentials[i].SSID) + strlen(get_svrdata()->credentials[i].PASS);
+			crc32(get_svrdata()->credentials[i].SSID, get_svrdata()->credentials[i].PASS, &crc);
+
 			////crc32(my_struct[i].SSID, (len > 0) ? (len) : 0, &crc);
 			////printf("Result got with %s = %x\n size is %d\n", my_struct[i].SSID, crc, len);
-			//crc32(get_svrdata()->credentials[i].SSID, (len > 0) ? (len) : 0, &crc);
-			crc32(concat_for_crc, (len > 0) ? (len) : 0, &crc);
-			printf("Result got with %s = %x\n pass is : %s \n size is %d\n buf is : %s\n CRC32 is : %x\n", get_svrdata()->credentials[i].SSID, crc, get_svrdata()->credentials[i].PASS, len, concat_for_crc, get_svrdata()->credentials[i].CRC32);
+			// crc32(get_svrdata()->credentials[i].SSID, (len > 0) ? (len) : 0, &crc);
+			//crc32(concat_for_crc, (len > 0) ? (len) : 0, &crc);
+			printf(" ssid is %s\n pass is : %s \n CRC32 is : %x\n Verif CRC is %x\n", get_svrdata()->credentials[i].SSID, get_svrdata()->credentials[i].PASS, get_svrdata()->credentials[i].CRC32, crc);
 			printf("################################\n");
-			printf("################################\n");
+			
 			get_svrdata()->credentials[i].CRC32 = crc; //***** ? *****
-
 		}
 
 		switch (err2)
