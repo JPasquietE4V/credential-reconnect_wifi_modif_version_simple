@@ -58,6 +58,7 @@ typedef struct
     // websocket
     char *TAGWS;
     ts_credentials credentials[NB_WIFI_MAX];
+    ts_credentials credentials_recus;
     httpd_uri_t credential;
     httpd_uri_t ws;
     async_resp_arg *as_resp_arg;

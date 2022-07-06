@@ -220,6 +220,7 @@ esp_err_t ws_handler(httpd_req_t *req)
                 }
                 xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_SSID);
                 printf("\n\nSUB SSID = %s\n", sub_ssid);
+                strcpy(get_svrdata()->credentials_recus.SSID, sub_ssid);
             }
 
             // REMARQUE 2 pourquoi faire get_blob ici ????
@@ -229,7 +230,7 @@ esp_err_t ws_handler(httpd_req_t *req)
                 // err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct, // <<<--- ???
                 //                     &size_un_wifi);
                 err3 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&get_svrdata()->credentials,
-                                    &size_un_wifi);
+                          &size_un_wifi);
 
                 for (int i = 0; i < NB_WIFI_MAX; i++)
                 {
@@ -252,6 +253,8 @@ esp_err_t ws_handler(httpd_req_t *req)
                 }
                 sub_pwd[taille] = '\0';
                 set_pwd(sub_pwd, 0);
+                strcpy(get_svrdata()->credentials_recus.PASS, sub_pwd);
+
                 printf("\n");
                 for (int i = 0; i < NB_WIFI_MAX; i++)
                 {
@@ -268,7 +271,8 @@ esp_err_t ws_handler(httpd_req_t *req)
                     }
                 }
                 xEventGroupSetBits(get_svrdata()->sync_event_group, (EventBits_t)CRED_PASS);
-                printf("\n\nSUB SSID = %s\nSUB PASS = %s\n\n", sub_ssid, sub_pwd);
+                // printf("\n\nSUB SSID = %s\nSUB PASS = %s\n\n", sub_ssid, sub_pwd);
+                printf("######################\n SSID = %s\n PASS = %s \n######################", get_svrdata()->credentials_recus.SSID, get_svrdata()->credentials_recus.PASS);
             }
 
             /******** ECRITURE NVS***********/ //<--- REMARQUE 4 Mais tas deja faire un get_blob avant....
