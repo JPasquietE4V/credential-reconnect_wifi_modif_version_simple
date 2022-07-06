@@ -10,6 +10,7 @@
 #include "websocket.h"
 #include "apsta.h"
 #include "simplecrc.h"
+#include "nvs.h"
 
 #define CREDENTIALS_LEN 65
 #define STREND (CREDENTIALS_LEN - 1)
@@ -327,8 +328,10 @@ esp_err_t ws_handler(httpd_req_t *req)
             //            printf("____________________________________\n");
             /**************************************/
 
-            err3 = nvs_set_blob(my_handle, "ssid", (uint8_t *)&get_svrdata()->credentials,
-                                size_tous_les_wifis);
+           // err3 = nvs_set_blob(my_handle, "ssid", (uint8_t *)&get_svrdata()->credentials,
+            //                    size_tous_les_wifis);
+
+            fct_write_flash("ssid", (uint8_t *)&get_svrdata()->credentials, size_tous_les_wifis);
 
             vTaskDelay(100 / portTICK_PERIOD_MS);
             err3 = nvs_commit(my_handle);
