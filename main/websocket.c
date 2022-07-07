@@ -188,29 +188,26 @@ esp_err_t ws_handler(httpd_req_t *req)
             //*** Choix de l'emplacement du nouveau réseau ***
             // on pourrait directement mettre l'égalité entre credential[i] et credential_reçu
 
-                for (int i = 0; i < NB_WIFI_MAX; i++)
+            for (int i = 0; i < NB_WIFI_MAX; i++)
+            {
+                if (get_svrdata()->credentials[i].CRC32 == 0xb84614a0)
                 {
-                    if (get_svrdata()->credentials[i].CRC32 == 0xb84614a0)
+                    strcpy(get_svrdata()->credentials[i].SSID, get_svrdata()->credentials_recus.SSID);
+                    strcpy(get_svrdata()->credentials[i].PASS, get_svrdata()->credentials_recus.PASS);
+                    uint32_t crc = 0;
+                    crc32(get_svrdata()->credentials[i].SSID, get_svrdata()->credentials[i].PASS, &crc);
+                    get_svrdata()->credentials[i].CRC32 = crc;
+                    break;
+                }
+                else
+                {
+                    if (i == (NB_WIFI_MAX - 1))
                     {
-                        strcpy(get_svrdata()->credentials[i].SSID, get_svrdata()->credentials_recus.SSID);
-                        strcpy(get_svrdata()->credentials[i].PASS, get_svrdata()->credentials_recus.PASS);
-                        uint32_t crc = 0;
-                        crc32(get_svrdata()->credentials[i].SSID, get_svrdata()->credentials[i].PASS, &crc);
-                        get_svrdata()->credentials[i].CRC32 = crc;
-                         printf("W SSID : %s\n PASS : %s\n CRC32 : %x\n\n", get_svrdata()->credentials[i].SSID,
-                         get_svrdata()->credentials[i].PASS, get_svrdata()->credentials[i].CRC32);
-
-                        break;
-                    }
-                    else
-                    {
-                        if (i == (NB_WIFI_MAX - 1))
-                        {
-                            printf("Desole, la limite de réseaux wifi enregistrés a été atteinte \n");
-                        }
+                        printf("Desole, la limite de réseaux wifi enregistrés a été atteinte \n");
                     }
                 }
-
+            }
+    
             // remise a 0
             /*   for (int i = 0; i < NB_WIFI_MAX; i++)
                 {
@@ -228,7 +225,7 @@ esp_err_t ws_handler(httpd_req_t *req)
             printf("/////////////////////////////////////////////\n");
             for (int i = 0; i < NB_WIFI_MAX; i++)
             {
-                printf("R SSID : %s\n PASS : %s\n CRC32 : %x\n\n", get_svrdata()->credentials[i].SSID,
+                printf("SSID : %s\n PASS : %s\n CRC32 : %x\n\n", get_svrdata()->credentials[i].SSID,
                        get_svrdata()->credentials[i].PASS, get_svrdata()->credentials[i].CRC32);
             }
             printf("/////////////////////////////////////////////\n");
@@ -236,23 +233,41 @@ esp_err_t ws_handler(httpd_req_t *req)
 
         if (strstr((char *)ws_pkt.payload, "SUPP"))
         {
-            for (int i = 0; i < NB_WIFI_MAX; i++)
+            for (int i = 0; i < size_ws_pkt; i++)
             {
-                strcpy(get_svrdata()->credentials[i].SSID, "0");
-                strcpy(get_svrdata()->credentials[i].PASS, "0");
-                uint32_t crc = 0;
-                crc32(get_svrdata()->credentials[i].SSID, get_svrdata()->credentials[i].PASS, &crc);
-                get_svrdata()->credentials[i].CRC32 = crc;
+                buf_pass[i] = *(ws_pkt.payload + 7 + i);
+            }
 
-                printf("W SSID : %s\n PASS : %s\n CRC32 : %x\n\n", get_svrdata()->credentials[i].SSID,
-                       get_svrdata()->credentials[i].PASS, get_svrdata()->credentials[i].CRC32);
+            buf_pass[size_ws_pkt] = '\0';
+
+            if (strstr(buf_pass, "ALL"))
+            {
+                for (int i = 0; i < NB_WIFI_MAX; i++)
+                {
+                    strcpy(get_svrdata()->credentials[i].SSID, "0");
+                    strcpy(get_svrdata()->credentials[i].PASS, "0");
+                    uint32_t crc = 0;
+                    crc32(get_svrdata()->credentials[i].SSID, get_svrdata()->credentials[i].PASS, &crc);
+                    get_svrdata()->credentials[i].CRC32 = crc;
+
+                    // printf("W SSID : %s\n PASS : %s\n CRC32 : %x\n\n", get_svrdata()->credentials[i].SSID,
+                    //       get_svrdata()->credentials[i].PASS, get_svrdata()->credentials[i].CRC32);
+                }
+            }
+            else
+            {
+                strcpy(get_svrdata()->credentials[atoi(buf_pass)].SSID, "0");
+                strcpy(get_svrdata()->credentials[atoi(buf_pass)].PASS, "0");
+                uint32_t crc = 0;
+                crc32(get_svrdata()->credentials[atoi(buf_pass)].SSID, get_svrdata()->credentials[atoi(buf_pass)].PASS, &crc);
+                get_svrdata()->credentials[atoi(buf_pass)].CRC32 = crc;
             }
 
             fct_write_flash("credentials", (uint8_t *)&get_svrdata()->credentials, size_tous_les_wifis);
             printf("----------------------------------------------\n");
             for (int i = 0; i < NB_WIFI_MAX; i++)
             {
-                printf("R SSID : %s\n PASS : %s\n CRC32 : %x\n\n", get_svrdata()->credentials[i].SSID,
+                printf("SSID : %s\n PASS : %s\n CRC32 : %x\n\n", get_svrdata()->credentials[i].SSID,
                        get_svrdata()->credentials[i].PASS, get_svrdata()->credentials[i].CRC32);
             }
             printf("----------------------------------------------\n");
