@@ -9,7 +9,7 @@ void event_handler(void *arg, esp_event_base_t event_base,
 {
 	if (event_id == WIFI_EVENT_STA_DISCONNECTED)
 	{
-		//printf(" \n Station disconnected \n");
+		// printf(" \n Station disconnected \n");
 		get_svrdata()->wifi_sta_connected = false;
 	}
 
@@ -75,11 +75,6 @@ void initialise_wifi(void)
 		pointer to esp-netif object on success
 		NULL otherwise
 	*/
-	// esp_netif_t *ap_netif = esp_netif_create_default_wifi_ap();
-	// assert(ap_netif);
-	// esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
-	// assert(sta_netif);
-
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	get_svrdata()->cfg = cfg;
 
@@ -140,29 +135,7 @@ bool wifi_apsta(int timeout_ms)
 		// Read
 		printf("Reading restart counter from NVS ... \n\n");
 
-		// Memes remarques que sur la ligne 90 du main.c 
-		// du coup j'ai du mal a comprendre pouqoui cette redondance de code 
-		#if 0
-		ts_credentials my_struct[NB_WIFI_MAX];
-		for (int i = 0; i < NB_WIFI_MAX ; i++)
-		{
-			strcpy(my_struct[i].SSID, "  ");
-			strcpy(my_struct[i].PASS, "  ");
-
-			size_t s = sizeof(ts_credentials) / sizeof(uint8_t);
-			err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)&my_struct,
-								&s);
-
-			my_struct[i].SSID[STREND] = 0; // au cas ou
-			my_struct[i].PASS[STREND] = 0; // au cas ou
-
-			printf("-->get SSID %d = %s\n", i, my_struct[i].SSID);
-			printf("-->get PASS %d = %s \n\n", i, my_struct[i].PASS);
-		}
-		#endif
-
 		size_t taille_totale = NB_WIFI_MAX * sizeof(ts_credentials) / sizeof(uint8_t);
-		// lecture de TOUT LE BLOC D'UN SEUL COUP
 		esp_err_t err2 = nvs_get_blob(my_handle, "ssid", (uint8_t *)(get_svrdata()->credentials), &taille_totale);
 
 		switch (err2)
@@ -183,13 +156,10 @@ bool wifi_apsta(int timeout_ms)
 		// Close
 		vTaskDelay(100 / portTICK_PERIOD_MS);
 		nvs_close(my_handle);
-
 		/************* MISE A JOUR DE LA CONFIG	*************/
 		printf("\n\n\n MISE A JOUR DE LA CONFIG\n");
-		for (int i = 0; i < NB_WIFI_MAX ; i++)
+		for (int i = 0; i < NB_WIFI_MAX; i++)
 		{
-			//strcpy((char *)(get_svrdata()->sta_config.sta.ssid), my_struct[i].SSID);
-			//strcpy((char *)(get_svrdata()->sta_config.sta.password), my_struct[i].PASS);
 			strcpy((char *)(get_svrdata()->sta_config.sta.ssid), get_svrdata()->credentials[i].SSID);
 			strcpy((char *)(get_svrdata()->sta_config.sta.password), get_svrdata()->credentials[i].PASS);
 		}
@@ -211,7 +181,7 @@ bool wifi_apsta(int timeout_ms)
 								   pdFALSE, pdTRUE, timeout_ms / portTICK_PERIOD_MS);
 	ESP_LOGI(get_svrdata()->TAG_APSTA, "bits=%x", bits);
 
-	for (int i = 0; i < NB_WIFI_MAX ; i++)
+	for (int i = 0; i < NB_WIFI_MAX; i++)
 	{
 		ESP_LOGI(get_svrdata()->TAG_APSTA, "WIFI_MODE_STA connecting. SSID:%s password:%s",
 				 get_svrdata()->credentials[i].SSID, get_svrdata()->credentials[i].PASS);

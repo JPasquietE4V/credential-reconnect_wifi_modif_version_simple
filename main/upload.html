@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="fr">
-<!--<meta content="charset=UTF-8">-->
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 
 <head>
@@ -41,14 +40,12 @@
                             for (var i = 0; i < messages.length; i++) {
                                 var item = document.createElement("pre");
                                 item.innerText = messages[i];
-                                //  appendLog(item);
                             }
                         }
                     }
                 } else {
                     var item = document.createElement("pre");
                     item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
-                    //   appendLog(item);
                 }
             };
 
@@ -72,13 +69,6 @@
                 if (!pwd.value) {
                     return false;
                 }
-                //conn.send(str1);
-                //const str1 = msg.value.toString();
-                //const str2 = str2.concat('hello ',str1);
-                //var x = new String(msg.value);
-                //const str1 = msg.value;
-                //conn.send(x.concat('','ssid'));
-                // conn.send(str2);
                 window.location.reload;
                 conn.send('SSID'.concat(' : ', msg.value));
                 conn.send('PASS'.concat(' : ', pwd.value));
@@ -86,8 +76,6 @@
                 item.classList.add("subscribeMsg");
                 item.innerHTML = msg.value;
                 item.innerHTML = pwd.value;
-
-                // appendLog(item);
                 return true;
             };
 
@@ -114,12 +102,10 @@
         }
 
         body {
-            /* padding: 30px; */
             background-color: #e5e5f7;
             opacity: 0.8;
             background-image: repeating-radial-gradient(circle at 0 0, transparent 0, #e5e5f7 15px), repeating-linear-gradient(#b6b6bb55, #b6b6bb);
             background-repeat: no-repeat;
-            /* height: 100%;*/
         }
 
         fieldset {
@@ -150,18 +136,6 @@
             width: 150px;
         }
 
-        .form {
-            /* padding: 0 0.5em 0 0.5em;*/
-            /*   margin: 0;
-            position: absolute;
-            bottom: 3em;
-            top: 5em;
-            left: 8px;
-            width: 100%;
-            overflow: hidden;*/
-
-        }
-
         .serverLocation {
             padding-top: 0.3em;
         }
@@ -178,15 +152,11 @@
 
 
         .fieldset {
-            /*
-            max-width: 500px;
-            max-height: 500px;*/
             width: auto;
             height: auto;
         }
 
 
-        /*@media screen and (max-width: 600px) and (max-height:1000px)*/
         @media only screen and (max-width: 500px) {
             .outer-div {
                 margin: 0;
