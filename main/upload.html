@@ -70,6 +70,7 @@
                     return false;
                 }
                 window.location.reload;
+                //document.getElementsByName('selection_reseau')[0].options[0].innerHTML =msg.value;
                 conn.send('SSID'.concat(' : ', msg.value));
                 conn.send('PASS'.concat(' : ', pwd.value));
                 var item = document.createElement("pre");
@@ -89,7 +90,11 @@
             document.getElementById("btn_remove_all_wifi").onclick = function () {
                 conn.send('SUPP'.concat(' : ALL'));
             };
+
+            //   message = await conn.recv();
+            //   document.getElementsByName('selection_reseau')[0].options[0].innerHTML = message;
         };
+
     </script>
 
 
@@ -106,22 +111,35 @@
             opacity: 0.8;
             background-image: repeating-radial-gradient(circle at 0 0, transparent 0, #e5e5f7 15px), repeating-linear-gradient(#b6b6bb55, #b6b6bb);
             background-repeat: no-repeat;
+            font-weight: 800;
+            font-family: "Lucida Console";
         }
 
         fieldset {
             border-radius: 10px;
             text-align: center;
-            margin-right: 100px;
-            margin-left: 100px;
+        /*   margin-right: 100px;
+            margin-left: 100px;*/
+            width: auto;
+            height: auto;
+            margin-left: 20%;
+            margin-right:20%;  
+            margin-top: 5%;
         }
 
 
         .outer-div {
             padding: 50px;
-            margin-left: 15%;
+            padding-top: 20px;
+        /*  margin-left: 15%;
+            margin-top: 5%;  */
+            /*    width: 600px;
+            height: 400px; */
+            width: auto;
+            height: auto;
+            margin-left: 20%;
+            margin-right:20%;  
             margin-top: 5%;
-            width: 600px;
-            height: 350px;
             background-color: #f3f3f3;
             border-radius: 25px;
 
@@ -156,11 +174,51 @@
             height: auto;
         }
 
+        button {
+            border-top: 0;
+            cursor: pointer;
+        }
+
+        .wetasphalt {
+            margin-left: 150px;
+            margin-right: 5px;
+            width: 80px;
+            background: #34495e;
+            border-bottom: #2c3e50 3px solid;
+            border-left: #2c3e50 1px solid;
+            border-right: #2c3e50 1px solid;
+            border-radius: 6px;
+            text-align: center;
+            color: white;
+            padding: 5px;
+            float: left;
+            font-size: 12px;
+            font-weight: 800;
+
+        }
+
+        .wetasphalt:hover {
+            opacity: 0.8;
+        }
+
+        .wetasphalt:active {
+            width: 100px;
+            background: #2D3F51;
+            border-bottom: #2c3e50 1px solid;
+            border-left: #2c3e50 1px solid;
+            border-right: #2c3e50 1px solid;
+            border-radius: 6px;
+            text-align: center;
+            color: white;
+            padding: 10px;
+            margin-top: 3px;
+            float: left;
+        }
 
         @media only screen and (max-width: 500px) {
             .outer-div {
-                margin: 0;
-                margin-top: 100px;
+                margin: 10%;
+                /*margin-top: 100px;*/
                 padding: 0px;
                 width: auto;
                 height: auto;
@@ -171,19 +229,24 @@
                 max-height: 500px;
                 width: auto;
                 height: auto;
+            }
 
+            .wetasphalt {
+                margin-left: 60px;
             }
 
             #Serveur {
                 width: 200px;
                 position: relative;
                 right: 60px;
+                margin-left: 100px;
             }
 
             #requestSection {
                 position: relative;
                 top: 5px;
                 right: 60px;
+                margin-left: 100px;
 
             }
 
@@ -202,7 +265,7 @@
 
 
 
-        <fieldset style="padding:20px; text-align: center;" id="Serveur">
+        <fieldset style="text-align: center; padding-top:20px;" id="Serveur">
             <legend>Reseaux Connus</legend>
             <div style="display:none;">
                 <input type="button" id="connect" value="Connecter" class="button" />
@@ -214,7 +277,8 @@
 
             <form>
                 <label for="selection_reseau">Choisissez votre reseau:</label>
-                <select name="selection_reseau" id="selection_reseau">
+                <select name="selection_reseau" id="selection_reseau"
+                    style="background-color:#f2f2f2; font-family: Lucida Console; border-radius: 10px; border-width: .2 px;">
                     <option value="0">Reseau 1</option>
                     <option value="1">Reseau 2</option>s
                     <option value="2">Reseau 3</option>
@@ -222,12 +286,12 @@
                 </select>
             </form>
             <br>
-            <button id="btn_remove_selected_wifi"
-                style="margin-left:15px; background-color:rgba(105, 2, 2, 0.34); color:white;">
+            <button id="btn_remove_selected_wifi" class="wetasphalt"
+                style="font-size: 10px; margin-left:100px; background-color:rgba(105, 2, 2, 0.34); color:white;">
                 Effacer le wifi </button>
 
-            <button id="btn_remove_all_wifi"
-                style="margin-left:15px; margin-top:15px; background-color:rgb(109, 7, 7); color:white;">
+            <button id="btn_remove_all_wifi" class="wetasphalt"
+                style="font-size: 10px; margin-left:15px; background-color:rgba(105, 2, 2, 0.84); color:white;">
                 Effacer tous les reseaux </button>
 
 
@@ -236,14 +300,16 @@
         </fieldset><br></br>
         <fieldset id="requestSection" style="text-align: center;">
             <legend>Envoi de Requete</legend>
-            <form id="form">
+            <form id="form" style="margin-top:20px;">
 
-                <a>SSID : </a> <input type="text" id="msg" size="30" />
+                <a>SSID : </a> <input type="text" id="msg" size="25"
+                    style="background-color:#f2f2f2; border-radius: 10px;  border-width: .1px;" />
                 <br></br>
-                <a>Mot de passe : </a> <input type="text" id="pwd" size="30" />
+                <a>PASS : </a> <input type="text" id="pwd" size="25"
+                    style="background-color:#f2f2f2; border-radius: 10px;  border-width: .1px;" />
                 <br></br>
 
-                <input type="submit" type="submit" value="Envoyer" ; enabled />
+                <input class="wetasphalt changeSelected " type="submit" type="submit" value="Envoyer" ; enabled />
             </form>
         </fieldset><br></br>
 

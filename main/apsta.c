@@ -40,7 +40,6 @@ void event_handler(void *arg, esp_event_base_t event_base,
 			ESP_ERR_WIFI_CONN: WiFi internal error, station or soft-AP control block wrong
 			ESP_ERR_WIFI_SSID: SSID of AP which station connects is invalid
 		*/
-
 		esp_wifi_connect();
 		xEventGroupClearBits(get_svrdata()->wifi_event_group, get_svrdata()->CONNECTED_BIT);
 	}
@@ -158,7 +157,7 @@ bool wifi_apsta(int timeout_ms)
 		nvs_close(my_handle);
 		/************* MISE A JOUR DE LA CONFIG	*************/
 		printf("\n\n\n MISE A JOUR DE LA CONFIG\n");
-		for (int i = 0; i < NB_WIFI_MAX; i++)
+		for (int i = 0; i < NB_WIFI_MAX-1; i++)
 		{
 			strcpy((char *)(get_svrdata()->sta_config.sta.ssid), get_svrdata()->credentials[i].SSID);
 			strcpy((char *)(get_svrdata()->sta_config.sta.password), get_svrdata()->credentials[i].PASS);

@@ -129,6 +129,10 @@ esp_err_t ws_handler(httpd_req_t *req)
     ws_pkt.type = HTTPD_WS_TYPE_TEXT;
     /* Set max_len = 0 to get the frame len */
     esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
+    const char resp[] = "URI GET Response";
+    esp_err_t ret2 = httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+    printf("\n\n\n ESP ERR 2 = %d \n\n\n", ret2);
+
     if (ret != ESP_OK)
     {
         ESP_LOGE(TAGWS, "httpd_ws_recv_frame failed to get frame len with %d", ret);
@@ -204,6 +208,10 @@ esp_err_t ws_handler(httpd_req_t *req)
             }
 
             fct_write_flash("credentials", (uint8_t *)&get_svrdata()->credentials, size_tous_les_wifis);
+            printf("............\n");
+            printf("vTaskDelay(100 / portTICK_PERIOD_MS)\n");
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+            printf("............\n\n");
             printf("/////////////////////////////////////////////\n");
             for (int i = 0; i < NB_WIFI_MAX; i++)
             {
@@ -241,8 +249,11 @@ esp_err_t ws_handler(httpd_req_t *req)
                 crc32(get_svrdata()->credentials[atoi(buf_pass)].SSID, get_svrdata()->credentials[atoi(buf_pass)].PASS, &crc);
                 get_svrdata()->credentials[atoi(buf_pass)].CRC32 = crc;
             }
-
             fct_write_flash("credentials", (uint8_t *)&get_svrdata()->credentials, size_tous_les_wifis);
+            printf("............\n");
+            printf("vTaskDelay(100 / portTICK_PERIOD_MS)\n");
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+            printf("............\n\n");
             printf("----------------------------------------------\n");
             for (int i = 0; i < NB_WIFI_MAX; i++)
             {
@@ -251,6 +262,10 @@ esp_err_t ws_handler(httpd_req_t *req)
             }
             printf("----------------------------------------------\n");
         }
+        printf("............\n");
+        printf("vTaskDelay(100 / portTICK_PERIOD_MS)\n");
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        printf("............\n\n");
     }
     ESP_LOGI(TAGWS, "Packet type: %d", ws_pkt.type);
     if (ws_pkt.type == HTTPD_WS_TYPE_TEXT &&
