@@ -1,6 +1,7 @@
 #include "apsta.h"
 #include "websocket.h"
 #include "apsta_shared.h"
+#include "nvs.h"
 
 const char *TAG_APSTA = "AP_STATION";
 
@@ -9,7 +10,7 @@ void event_handler(void *arg, esp_event_base_t event_base,
 {
 	if (event_id == WIFI_EVENT_STA_DISCONNECTED)
 	{
-		// printf(" \n Station disconnected \n");
+		printf(" \n Station disconnected \n");
 		get_svrdata()->wifi_sta_connected = false;
 	}
 
@@ -157,10 +158,19 @@ bool wifi_apsta(int timeout_ms)
 		nvs_close(my_handle);
 		/************* MISE A JOUR DE LA CONFIG	*************/
 		printf("\n\n\n MISE A JOUR DE LA CONFIG\n");
-		for (int i = 0; i < NB_WIFI_MAX-1; i++)
+		for (int i = 0; i < NB_WIFI_MAX - 1; i++)
 		{
-			strcpy((char *)(get_svrdata()->sta_config.sta.ssid), get_svrdata()->credentials[i].SSID);
-			strcpy((char *)(get_svrdata()->sta_config.sta.password), get_svrdata()->credentials[i].PASS);
+			//uint8_t j = 2;
+			uint8_t k = 0;
+			//uint8_t *pj = &j;
+			uint8_t *pk = &k;
+			//size_t size = sizeof(uint8_t);
+			fct_read_flash_u8("choosed_network", pk);
+			strcpy((char *)(get_svrdata()->sta_config.sta.ssid), get_svrdata()->credentials[*pk].SSID);
+			strcpy((char *)(get_svrdata()->sta_config.sta.password), get_svrdata()->credentials[*pk].PASS);
+			//fct_write_flash("choosed_network", pj, &size);
+
+			//printf("||||||||| = %d \n\n\n", *pk);
 		}
 	}
 

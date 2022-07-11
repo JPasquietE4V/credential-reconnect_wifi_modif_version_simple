@@ -221,6 +221,22 @@ esp_err_t ws_handler(httpd_req_t *req)
             printf("/////////////////////////////////////////////\n");
         }
 
+        if (strstr((char *)ws_pkt.payload, "CONN"))
+        {
+            for (int i = 0; i < size_ws_pkt; i++)
+            {
+                buf_pass[i] = *(ws_pkt.payload + 7 + i); 
+            }
+            buf_pass[size_ws_pkt] = '\0';
+
+            uint8_t j = atoi(buf_pass);
+           //uint8_t* pj = &j;
+           // size_t size = sizeof(pj);
+            fct_write_flash_u8("choosed_network", j);
+            printf("\n\n--##--##--##--## choosed network = %d \n\n", j);
+            esp_restart();
+        }
+
         if (strstr((char *)ws_pkt.payload, "SUPP"))
         {
             for (int i = 0; i < size_ws_pkt; i++)

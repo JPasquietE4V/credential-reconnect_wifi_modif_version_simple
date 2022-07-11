@@ -80,12 +80,17 @@
                 return true;
             };
 
+            document.getElementById("btn_connect_selected_wifi").onclick = function () {
+                conn.send('CONN'.concat(' : ', selection_reseau.value));
+            };
+            
             document.getElementById("btn_remove_selected_wifi").onclick = function () {
                 conn.send('SUPP'.concat(' : ', selection_reseau.value));
                 var x = document.getElementById("selection_reseau");
                 x.remove(x.selectedIndex);
 
             };
+
 
             document.getElementById("btn_remove_all_wifi").onclick = function () {
                 conn.send('SUPP'.concat(' : ALL'));
@@ -286,12 +291,15 @@
                 </select>
             </form>
             <br>
+            <button id="btn_connect_selected_wifi" class="wetasphalt"
+                style="font-size: 10px; margin-left:30px; background-color:rgba(23, 88, 34, 0.34); color:white;">
+                Se connecter</button>
             <button id="btn_remove_selected_wifi" class="wetasphalt"
-                style="font-size: 10px; margin-left:100px; background-color:rgba(105, 2, 2, 0.34); color:white;">
+                style="font-size: 10px; margin-left:10px; background-color:rgba(105, 2, 2, 0.34); color:white;">
                 Effacer le wifi </button>
 
             <button id="btn_remove_all_wifi" class="wetasphalt"
-                style="font-size: 10px; margin-left:15px; background-color:rgba(105, 2, 2, 0.84); color:white;">
+                style="font-size: 10px; margin-left:10px; background-color:rgba(105, 2, 2, 0.84); color:white;">
                 Effacer tous les reseaux </button>
 
 
@@ -299,7 +307,7 @@
 
         </fieldset><br></br>
         <fieldset id="requestSection" style="text-align: center;">
-            <legend>Envoi de Requete</legend>
+            <legend>Ajout d'un nouveau reseau</legend>
             <form id="form" style="margin-top:20px;">
 
                 <a>SSID : </a> <input type="text" id="msg" size="25"
@@ -309,7 +317,7 @@
                     style="background-color:#f2f2f2; border-radius: 10px;  border-width: .1px;" />
                 <br></br>
 
-                <input class="wetasphalt changeSelected " type="submit" type="submit" value="Envoyer" ; enabled />
+                <input class="wetasphalt changeSelected " type="submit" type="submit" value="Ajouter" ; enabled />
             </form>
         </fieldset><br></br>
 

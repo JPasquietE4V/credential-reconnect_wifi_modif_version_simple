@@ -50,6 +50,7 @@ typedef struct
     int CONNECTED_BIT;
     bool wifi_initialized;
     bool wifi_sta_connected;
+    uint8_t selected_network;
     esp_netif_t *ap_netif;
     esp_netif_t *sta_netif;
     wifi_init_config_t cfg;
